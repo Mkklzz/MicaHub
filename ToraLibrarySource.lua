@@ -1,15 +1,10 @@
 local library = {flags = {}, windows = {}, open = true}
-
---Services
 local runService = game:GetService"RunService"
 local tweenService = game:GetService"TweenService"
 local textService = game:GetService"TextService"
 local inputService = game:GetService"UserInputService"
 local ui = Enum.UserInputType.MouseButton1
---Locals
 local dragging, dragInput, dragStart, startPos, dragObject
-
---Functions
 local function round(num, bracket)
 	bracket = bracket or 1
 	local a = math.floor(num/bracket + (math.sign(num) * 0.5)) * bracket
@@ -32,8 +27,7 @@ local function update(input)
 	local yPos = (startPos.Y.Offset + delta.Y) < -36 and -36 or startPos.Y.Offset + delta.Y
 	dragObject:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, yPos), "Out", "Quint", 0.1, true)
 end
- 
---From: https://devforum.roblox.com/t/how-to-create-a-simple-rainbow-effect-using-tweenService/221849/2
+
 local chromaColor
 local rainbowTime = 5
 spawn(function()
