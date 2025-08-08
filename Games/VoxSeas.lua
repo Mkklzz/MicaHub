@@ -17,7 +17,7 @@ local EnemySelectedDropdown = {
 
 local SlandData = {
     Sland1 = {
-        Location = workspace.Enemies,
+        Location = game.workspace.Enemies,
         Enemies = {
             "EnemyTreiner",
             "Monkey", 
@@ -25,7 +25,7 @@ local SlandData = {
         }
     },
     Sland2 = {
-        Location = workspace.SlandMaster.Enemies,
+        Location = game.workspace.Enemies,
         Enemies = {
             "EnemyKolar",
             "EnemyMelioda",
