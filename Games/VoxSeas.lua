@@ -9,9 +9,30 @@ local TakeFruitsEnabled = false
 local AutoQuestEnabled = false
 local PanelFarmEnabled = false
 
-local SelectedEnemyType = "Monkey"
-local EnemySelectedDropdown = nil
-local AttachConnection = nil
+local EnemySelectedDropdown = {
+    SelectedSlandFarm = nil,
+    AttachConnectionEnemy = nil,
+    Enemies = {}
+}
+
+local SlandData = {
+    Sland1 = {
+        Location = workspace.Enemies,
+        Enemies = {
+            "EnemyTreiner",
+            "Monkey", 
+            "Gorila"
+        }
+    },
+    Sland2 = {
+        Location = workspace.SlandMaster.Enemies,
+        Enemies = {
+            "EnemyKolar",
+            "EnemyMelioda",
+            "EnemyJeohe"
+        }
+    }
+}
 
 Window:AddToggle({
     text = "Take Fruits",
@@ -32,97 +53,66 @@ Window:AddButton({
             local WindowFarm = LibraryFarm:CreateWindow("Vox Farms")
             
             WindowFarm:AddList({
-                text = "Select Enemy",
-                values = {"Monkey", "Gorilla"},
-                callback = function(ListState)
-                    SelectedEnemyType = ListState
-                    EnemySelectedDropdown = nil
-                    
-                    local EnemiesFolder = workspace:FindFirstChild("Enemies")
-                    if not EnemiesFolder then return end
-                    
-                    for _, Enemy in pairs(EnemiesFolder:GetChildren()) do
-                        if Enemy:IsA("Model") and Enemy.Name == value and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                            EnemySelectedDropdown = Enemy
-                            return
-                        end
+                text = "Select Sland",
+                values = {"Sland1", "Sland2"},
+                callback = function(value)
+                    local SlandInfo = SlandData[value]
+                    if SlandInfo then
+                        EnemySelectedDropdown.SelectedSlandFarm = value
+                        EnemySelectedDropdown.Enemies = SlandInfo.Enemies
                     end
                 end,
                 open = false,
-                flag = "listflag"
+                flag = "dropdown"
             })
-            
-            local EnemiesFolder = workspace:FindFirstChild("Enemies")
-            if EnemiesFolder then
-                for _, Enemy in pairs(EnemiesFolder:GetChildren()) do
-                    if Enemy:IsA("Model") and Enemy.Name == SelectedEnemyType and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                        EnemySelectedDropdown = Enemy
-                        break
-                    end
-                end
-            end
             
             WindowFarm:AddToggle({
                 text = "Auto Quest [BETA]",
                 flag = "toggle",
                 callback = function(ToggleState)
+                    if not EnemySelectedDropdown.SelectedSlandFarm or #EnemySelectedDropdown.Enemies == 0 then
+                        return
+                    end
+                    
                     AutoQuestEnabled = ToggleState
                     
                     if AutoQuestEnabled then
-                        local function FindValidEnemyFarm()
-                            local EnemiesFolder = workspace:FindFirstChild("Enemies")
-                            if not EnemiesFolder then return nil end
-                            
-                            for _, Enemy in pairs(EnemiesFolder:GetChildren()) do
-                                if Enemy:IsA("Model") and Enemy.Name == SelectedEnemyType and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                                    return Enemy
-                                end
-                            end
-                            return nil
-                        end
-                        
-                        local function TeleportToEnemy()
+                        EnemySelectedDropdown.AttachConnectionEnemy = RunService.Heartbeat:Connect(function()
                             if not AutoQuestEnabled then return end
                             
                             local Character = Player.Character
                             if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
                             
-                            if not EnemySelectedDropdown or not EnemySelectedDropdown.Parent or not EnemySelectedDropdown:FindFirstChild("HumanoidRootPart") or not EnemySelectedDropdown:FindFirstChild("Humanoid") or EnemySelectedDropdown.Humanoid.Health <= 0 then
-                                EnemySelectedDropdown = FindValidEnemyFarm()
-                                if not EnemySelectedDropdown then return end
-                            end
-                            
-                            if EnemySelectedDropdown and EnemySelectedDropdown:FindFirstChild("HumanoidRootPart") then
-                                local EnemyPosition = EnemySelectedDropdown.HumanoidRootPart.Position
-                                Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(EnemyPosition.X, EnemyPosition.Y + 5, EnemyPosition.Z))
-                            end
-                        end
-                        
-                        AttachConnection = RunService.Heartbeat:Connect(function()
-                            TeleportToEnemy()
-                        end)
-                        
-                        local EnemiesFolder = workspace:FindFirstChild("Enemies")
-                        if EnemiesFolder then
-                            EnemiesFolder.ChildAdded:Connect(function(enemy)
-                                if not AutoQuestEnabled then return end
-                                if enemy:IsA("Model") and enemy.Name == SelectedEnemyType and not EnemySelectedDropdown then
-                                    if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                                        EnemySelectedDropdown = enemy
+                            if not TakeFruitsEnabled or not TakeFruitsEnabled.Parent or not TakeFruitsEnabled:FindFirstChild("HumanoidRootPart") or not TakeFruitsEnabled:FindFirstChild("Humanoid") or TakeFruitsEnabled.Humanoid.Health <= 0 then
+                                TakeFruitsEnabled = nil
+                                
+                                local SlandInfo = SlandData[EnemySelectedDropdown.SelectedSlandFarm]
+                                if SlandInfo and SlandInfo.Location then
+                                    for _, Enemy in pairs(SlandInfo.Location:GetChildren()) do
+                                        if Enemy:IsA("Model") and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
+                                            for _, EnemyName in pairs(EnemySelectedDropdown.Enemies) do
+                                                if Enemy.Name == EnemyName then
+                                                    TakeFruitsEnabled = Enemy
+                                                    break
+                                                end
+                                            end
+                                            if TakeFruitsEnabled then break end
+                                        end
                                     end
                                 end
-                            end)
-                            
-                            if not EnemySelectedDropdown then
-                                EnemySelectedDropdown = FindValidEnemyFarm()
                             end
-                        end
-                        
+                            
+                            if TakeFruitsEnabled then
+                                local EnemyPosition = TakeFruitsEnabled.HumanoidRootPart.Position
+                                Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(EnemyPosition.X, EnemyPosition.Y + 5, EnemyPosition.Z))
+                            end
+                        end)
                     else
-                        if AttachConnection then
-                            AttachConnection:Disconnect()
-                            AttachConnection = nil
+                        if EnemySelectedDropdown.AttachConnectionEnemy then
+                            EnemySelectedDropdown.AttachConnectionEnemy:Disconnect()
+                            EnemySelectedDropdown.AttachConnectionEnemy = nil
                         end
+                        TakeFruitsEnabled = false
                     end
                 end
             })
@@ -132,14 +122,8 @@ Window:AddButton({
                 flag = "button",
                 callback = function()
                     if not AutoQuestEnabled then
-                        if AttachConnection then
-                            AttachConnection:Disconnect()
-                            AttachConnection = nil
-                        end
                         LibraryFarm:Close()
                         PanelFarmEnabled = false
-                        EnemySelectedDropdown = nil
-                        SelectedEnemyType = "Monkey"
                     end
                 end
             })
@@ -155,11 +139,11 @@ Window:AddList({
     callback = function(ListState)
     end,
     open = false,
-    flag = "listflag"
+    flag = "dropdown"
 })
 
 Window:AddLabel({
-    text = "GitHub: Mkklzz",
+    text = "GitHub: Mkklz-h",
     type = "label"
 })
 
