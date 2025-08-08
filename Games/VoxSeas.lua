@@ -10,22 +10,23 @@ local AutoQuestEnabled = false
 local PanelFarmEnabled = false
 
 local EnemySelectedDropdown = {
-    SelectedSlandFarm = nil,
+    SelectedSlandFarm = "Sland1",
     AttachConnectionEnemy = nil,
-    Enemies = {}
+    EnemySelectedFarm = nil,
+    Enemies = {"Treiner", "Monkey", "Gorilla"}
 }
 
 local SlandData = {
     Sland1 = {
-        Location = game.workspace.Enemies,
+        Location = workspace.Enemies,
         Enemies = {
-            "EnemyTreiner",
+            "Treiner",
             "Monkey", 
-            "Gorila"
+            "Gorilla"
         }
     },
     Sland2 = {
-        Location = game.workspace.Enemies,
+        Location = workspace.Enemies,
         Enemies = {
             "EnemyKolar",
             "EnemyMelioda",
@@ -83,27 +84,30 @@ Window:AddButton({
                             local Character = Player.Character
                             if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
                             
-                            if not TakeFruitsEnabled or not TakeFruitsEnabled.Parent or not TakeFruitsEnabled:FindFirstChild("HumanoidRootPart") or not TakeFruitsEnabled:FindFirstChild("Humanoid") or TakeFruitsEnabled.Humanoid.Health <= 0 then
-                                TakeFruitsEnabled = nil
+                            if not EnemySelectedDropdown.EnemySelectedFarm or not EnemySelectedDropdown.EnemySelectedFarm.Parent or not EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("HumanoidRootPart") or not EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("Humanoid") or EnemySelectedDropdown.EnemySelectedFarm.Humanoid.Health <= 0 then
+                                CurrentTarget = nil
                                 
                                 local SlandInfo = SlandData[EnemySelectedDropdown.SelectedSlandFarm]
                                 if SlandInfo and SlandInfo.Location then
-                                    for _, Enemy in pairs(SlandInfo.Location:GetChildren()) do
+                                    local LocationChildren = SlandInfo.Location:GetChildren()
+                                    for I = 1, #LocationChildren do
+                                        local Enemy = LocationChildren[I]
                                         if Enemy:IsA("Model") and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                                            for _, EnemyName in pairs(EnemySelectedDropdown.Enemies) do
-                                                if Enemy.Name == EnemyName then
-                                                    TakeFruitsEnabled = Enemy
+                                            local EnemiesArray = EnemySelectedDropdown.Enemies
+                                            for J = 1, #EnemiesArray do
+                                                if Enemy.Name == EnemiesArray[J] then
+                                                    EnemySelectedDropdown.EnemySelectedFarm = Enemy
                                                     break
                                                 end
                                             end
-                                            if TakeFruitsEnabled then break end
+                                            if EnemySelectedDropdown.EnemySelectedFarm then break end
                                         end
                                     end
                                 end
                             end
                             
-                            if TakeFruitsEnabled then
-                                local EnemyPosition = TakeFruitsEnabled.HumanoidRootPart.Position
+                            if EnemySelectedDropdown.EnemySelectedFarm and EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("HumanoidRootPart") then
+                                local EnemyPosition = EnemySelectedDropdown.EnemySelectedFarm.HumanoidRootPart.Position
                                 Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(EnemyPosition.X, EnemyPosition.Y + 5, EnemyPosition.Z))
                             end
                         end)
@@ -112,7 +116,7 @@ Window:AddButton({
                             EnemySelectedDropdown.AttachConnectionEnemy:Disconnect()
                             EnemySelectedDropdown.AttachConnectionEnemy = nil
                         end
-                        TakeFruitsEnabled = false
+                        CurrentTarget = nil
                     end
                 end
             })
