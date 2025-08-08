@@ -2,42 +2,120 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklz
 local Window = Library:CreateWindow("Vox Seas")
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+
 local Player = Players.LocalPlayer
+local TakeFruitsEnabled, AutoQuestEnabled, PanelFarmEnabled = false, false, false
 
-local TakeFruitsEnabled = false
-local AutoQuestEnabled = false
-local PanelFarmEnabled = false
-
-local EnemySelectedDropdown = {
-    SelectedSlandFarm = "Sland1",
-    AttachConnectionEnemy = nil,
+local QuestSystem = {
+    SelectedToolFarm = "Combat",
+    SelectedQuestFarm = "Bandits Hunter",
+    EnemyFarmSpeed = 3,
     EnemySelectedFarm = nil,
-    Enemies = {"Treiner", "Monkey", "Gorilla"}
+    FarmConnectionQuest = nil
 }
 
-local SlandData = {
-    Sland1 = {
-        Location = workspace.Enemies,
-        Enemies = {
-            "Treiner",
-            "Monkey", 
-            "Gorilla"
-        }
-    },
-    Sland2 = {
-        Location = workspace.Enemies,
-        Enemies = {
-            "EnemyKolar",
-            "EnemyMelioda",
-            "EnemyJeohe"
+local GameData = {
+    EnemyFolder = workspace.Playability.Enemys["Foosha Village"],
+    CombatEvent = ReplicatedStorage.BetweenSides.Remotes.Events.CombatEvent,
+    DialogueEvent = ReplicatedStorage.BetweenSides.Remotes.Events.DialogueEvent,
+    QuestData = {
+        ["Bandits Hunter"] = {
+            NpcName = "Bandits Hunter",
+            QuestName = "Defeat Bandits",
+            EnemyPattern = "Bandit"
         }
     }
 }
 
+local DisconnectAllConnections = function()
+    if QuestSystem.FarmConnectionQuest then
+        QuestSystem.FarmConnectionQuest:Disconnect()
+        QuestSystem.FarmConnectionQuest = nil
+    end
+end
+
+local EquipTool = function(ToolName)
+    local Character = Player.Character
+    if not Character then return end
+    
+    local Tool = Player.Backpack:FindFirstChild(ToolName)
+    if Tool then
+        Character.Humanoid:EquipTool(Tool)
+    end
+end
+
+local FindValidEnemy = function()
+    local QuestInfo = GameData.QuestData[QuestSystem.SelectedQuestFarm]
+    if not QuestInfo then return nil end
+    
+    local Enemies = GameData.EnemyFolder:GetChildren()
+    for I = 1, #Enemies do
+        local Enemy = Enemies[I]
+        if Enemy:IsA("Model") and Enemy.Name:find(QuestInfo.EnemyPattern) and Enemy:FindFirstChild("Humanoid") and Enemy:FindFirstChild("HumanoidRootPart") then
+            if Enemy.Humanoid.Health > 0 then
+                return Enemy
+            end
+        end
+    end
+    return nil
+end
+
+local AttackEnemy = function(Enemy)
+    local Character = Player.Character
+    if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    Character.HumanoidRootPart.CFrame = Enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
+    
+    GameData.CombatEvent:FireServer("DealDamage", {
+        CallTime = tick(),
+        Results = {Enemy},
+        Combo = QuestSystem.EnemyFarmSpeed,
+        DelayTime = 0.01
+    })
+end
+
+local StartQuestSystem = function()
+    local QuestInfo = GameData.QuestData[QuestSystem.SelectedQuestFarm]
+    if not QuestInfo then return end
+    
+    GameData.DialogueEvent:FireServer("Quests", {
+        NpcName = QuestInfo.NpcName,
+        QuestName = QuestInfo.QuestName
+    })
+    
+    EquipTool(QuestSystem.SelectedToolFarm)
+    
+    QuestSystem.FarmConnectionQuest = RunService.Heartbeat:Connect(function()
+        if not AutoQuestEnabled then return end
+        
+        local Character = Player.Character
+        if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        if Character.Humanoid.Health <= 0 then
+            EquipTool(QuestSystem.SelectedToolFarm)
+            return
+        end
+        
+        local Tool = Player.Backpack:FindFirstChild(QuestSystem.SelectedToolFarm)
+        if Tool then
+            EquipTool(QuestSystem.SelectedToolFarm)
+        end
+        
+        if not QuestSystem.EnemySelectedFarm or not QuestSystem.EnemySelectedFarm.Parent or not QuestSystem.EnemySelectedFarm:FindFirstChild("Humanoid") or QuestSystem.EnemySelectedFarm.Humanoid.Health <= 0 then
+            QuestSystem.EnemySelectedFarm = FindValidEnemy()
+        end
+        
+        if QuestSystem.EnemySelectedFarm then
+            AttackEnemy(QuestSystem.EnemySelectedFarm)
+        end
+    end)
+end
+
 Window:AddToggle({
     text = "Take Fruits",
-    flag = "toggle",
+    flag = "ToggleTakeFruits",
     callback = function(ToggleState)
         TakeFruitsEnabled = ToggleState
     end
@@ -45,105 +123,74 @@ Window:AddToggle({
 
 Window:AddButton({
     text = "Farm Panel",
-    flag = "button",
+    flag = "ButtonFarmPanel",
     callback = function()
-        if not PanelFarmEnabled then
-            PanelFarmEnabled = true
-            
-            local LibraryFarm = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua", true))()
-            local WindowFarm = LibraryFarm:CreateWindow("Vox Farms")
-            
-            WindowFarm:AddList({
-                text = "Select Sland",
-                values = {"Sland1", "Sland2"},
-                callback = function(value)
-                    local SlandInfo = SlandData[value]
-                    if SlandInfo then
-                        EnemySelectedDropdown.SelectedSlandFarm = value
-                        EnemySelectedDropdown.Enemies = SlandInfo.Enemies
-                    end
-                end,
-                open = false,
-                flag = "dropdown"
-            })
-            
-            WindowFarm:AddToggle({
-                text = "Auto Quest [BETA]",
-                flag = "toggle",
-                callback = function(ToggleState)
-                    if not EnemySelectedDropdown.SelectedSlandFarm or #EnemySelectedDropdown.Enemies == 0 then
-                        return
-                    end
-                    
-                    AutoQuestEnabled = ToggleState
-                    
-                    if AutoQuestEnabled then
-                        EnemySelectedDropdown.AttachConnectionEnemy = RunService.Heartbeat:Connect(function()
-                            if not AutoQuestEnabled then return end
-                            
-                            local Character = Player.Character
-                            if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
-                            
-                            if not EnemySelectedDropdown.EnemySelectedFarm or not EnemySelectedDropdown.EnemySelectedFarm.Parent or not EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("HumanoidRootPart") or not EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("Humanoid") or EnemySelectedDropdown.EnemySelectedFarm.Humanoid.Health <= 0 then
-                                CurrentTarget = nil
-                                
-                                local SlandInfo = SlandData[EnemySelectedDropdown.SelectedSlandFarm]
-                                if SlandInfo and SlandInfo.Location then
-                                    local LocationChildren = SlandInfo.Location:GetChildren()
-                                    for I = 1, #LocationChildren do
-                                        local Enemy = LocationChildren[I]
-                                        if Enemy:IsA("Model") and Enemy:FindFirstChild("HumanoidRootPart") and Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 then
-                                            local EnemiesArray = EnemySelectedDropdown.Enemies
-                                            for J = 1, #EnemiesArray do
-                                                if Enemy.Name == EnemiesArray[J] then
-                                                    EnemySelectedDropdown.EnemySelectedFarm = Enemy
-                                                    break
-                                                end
-                                            end
-                                            if EnemySelectedDropdown.EnemySelectedFarm then break end
-                                        end
-                                    end
-                                end
-                            end
-                            
-                            if EnemySelectedDropdown.EnemySelectedFarm and EnemySelectedDropdown.EnemySelectedFarm:FindFirstChild("HumanoidRootPart") then
-                                local EnemyPosition = EnemySelectedDropdown.EnemySelectedFarm.HumanoidRootPart.Position
-                                Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(EnemyPosition.X, EnemyPosition.Y + 5, EnemyPosition.Z))
-                            end
-                        end)
-                    else
-                        if EnemySelectedDropdown.AttachConnectionEnemy then
-                            EnemySelectedDropdown.AttachConnectionEnemy:Disconnect()
-                            EnemySelectedDropdown.AttachConnectionEnemy = nil
-                        end
-                        CurrentTarget = nil
-                    end
+        if PanelFarmEnabled then return end
+        PanelFarmEnabled = true
+        
+        local LibraryFarm = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua", true))()
+        local WindowFarm = LibraryFarm:CreateWindow("Vox Farms")
+        
+        WindowFarm:AddList({
+            text = "Select Tools",
+            values = {"Combat", "Sword", "Gun"},
+            flag = "DropdownSelectTools",
+            callback = function(SelectedValue)
+                QuestSystem.SelectedToolFarm = SelectedValue
+            end,
+            open = false
+        })
+        
+        WindowFarm:AddList({
+            text = "Select Quest",
+            values = {"Bandits Hunter"},
+            flag = "DropdownSelectQuest",
+            callback = function(SelectedValue)
+                QuestSystem.SelectedQuestFarm = SelectedValue
+            end,
+            open = false
+        })
+        
+        WindowFarm:AddBox({
+            text = "Farm Quest Speed",
+            flag = "BoxFarmSpeed",
+            value = "5",
+            callback = function(BoxValue)
+                local SpeedValue = tonumber(BoxValue)
+                if SpeedValue and SpeedValue >= 1 and SpeedValue <= 10 then
+                    QuestSystem.EnemyFarmSpeed = SpeedValue
                 end
-            })
-            
-            WindowFarm:AddButton({
-                text = "Close",
-                flag = "button",
-                callback = function()
-                    if not AutoQuestEnabled then
-                        LibraryFarm:Close()
-                        PanelFarmEnabled = false
-                    end
+            end
+        })
+        
+        WindowFarm:AddToggle({
+            text = "Auto Quest [BETA]",
+            flag = "ToggleAutoQuest",
+            callback = function(ToggleState)
+                AutoQuestEnabled = ToggleState
+                
+                if AutoQuestEnabled then
+                    StartQuestSystem()
+                else
+                    DisconnectAllConnections()
+                    QuestSystem.EnemySelectedFarm = nil
                 end
-            })
-            
-            LibraryFarm:Init()
-        end
+            end
+        })
+        
+        WindowFarm:AddButton({
+            text = "Close",
+            flag = "ButtonClose",
+            callback = function()
+                if not AutoQuestEnabled then
+                    LibraryFarm:Close()
+                    PanelFarmEnabled = false
+                end
+            end
+        })
+        
+        LibraryFarm:Init()
     end
-})
-
-Window:AddList({
-    text = "Teleport",
-    values = {"Sland Pirarte"},
-    callback = function(ListState)
-    end,
-    open = false,
-    flag = "dropdown"
 })
 
 Window:AddLabel({
