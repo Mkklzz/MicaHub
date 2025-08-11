@@ -1,201 +1,214 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua", true))()
-local Window = Library:CreateWindow("Vox Seas")
+local ReplicatedStorage, Players, LocalPlayer, RunService = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService")
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+repeat RunService.Heartbeat:wait() until LocalPlayer.Character
 
-local Player = Players.LocalPlayer
-local TakeFruitsEnabled, AutoQuestEnabled, PanelFarmEnabled = false, false, false
+local Framework, MainModules = ReplicatedStorage:WaitForChild("Framework"), ReplicatedStorage:WaitForChild("MainModules")
+local AutoFarmQuestsEnabled, AutoBringMobsEnabled, AutoCollectFruitEnabled, AutoStatusEnabled = false, false, false, false
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-local QuestSystem = {
-    SelectedToolFarm = "Combat",
-    SelectedQuestFarm = "Bandits Hunter",
-    EnemyFarmSpeed = 3,
-    EnemySelectedFarm = nil,
-    FarmConnectionQuest = nil
-}
-
-local GameData = {
-    EnemyFolder = workspace.Playability.Enemys["Foosha Village"],
-    CombatEvent = ReplicatedStorage.BetweenSides.Remotes.Events.CombatEvent,
-    DialogueEvent = ReplicatedStorage.BetweenSides.Remotes.Events.DialogueEvent,
-    QuestData = {
-        ["Bandits Hunter"] = {
-            NpcName = "Bandits Hunter",
-            QuestName = "Defeat Bandits",
-            EnemyPattern = "Bandit"
-        }
-    }
-}
-
-local DisconnectAllConnections = function()
-    if QuestSystem.FarmConnectionQuest then
-        QuestSystem.FarmConnectionQuest:Disconnect()
-        QuestSystem.FarmConnectionQuest = nil
-    end
+local function SetCharacterAttribute(char)
+    char:SetAttribute("IgnoreAntiTeleport", true)
 end
 
-local EquipTool = function(ToolName)
-    local Character = Player.Character
-    if not Character then return end
-    
-    local Tool = Player.Backpack:FindFirstChild(ToolName)
-    if Tool then
-        Character.Humanoid:EquipTool(Tool)
-    end
-end
+SetCharacterAttribute(Character)
+LocalPlayer.CharacterAdded:Connect(SetCharacterAttribute)
 
-local FindValidEnemy = function()
-    local QuestInfo = GameData.QuestData[QuestSystem.SelectedQuestFarm]
-    if not QuestInfo then return nil end
-    
-    local Enemies = GameData.EnemyFolder:GetChildren()
-    for I = 1, #Enemies do
-        local Enemy = Enemies[I]
-        if Enemy:IsA("Model") and Enemy.Name:find(QuestInfo.EnemyPattern) and Enemy:FindFirstChild("Humanoid") and Enemy:FindFirstChild("HumanoidRootPart") then
-            if Enemy.Humanoid.Health > 0 then
-                return Enemy
-            end
-        end
-    end
-    return nil
-end
-
-local AttackEnemy = function(Enemy)
-    local Character = Player.Character
-    if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
-    
-    Character.HumanoidRootPart.CFrame = Enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
-    
-    GameData.CombatEvent:FireServer("DealDamage", {
-        CallTime = tick(),
-        Results = {Enemy},
-        Combo = QuestSystem.EnemyFarmSpeed,
-        DelayTime = 0.01
-    })
-end
-
-local StartQuestSystem = function()
-    local QuestInfo = GameData.QuestData[QuestSystem.SelectedQuestFarm]
-    if not QuestInfo then return end
-    
-    GameData.DialogueEvent:FireServer("Quests", {
-        NpcName = QuestInfo.NpcName,
-        QuestName = QuestInfo.QuestName
-    })
-    
-    EquipTool(QuestSystem.SelectedToolFarm)
-    
-    QuestSystem.FarmConnectionQuest = RunService.Heartbeat:Connect(function()
-        if not AutoQuestEnabled then return end
-        
-        local Character = Player.Character
-        if not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
-        
-        if Character.Humanoid.Health <= 0 then
-            EquipTool(QuestSystem.SelectedToolFarm)
-            return
-        end
-        
-        local Tool = Player.Backpack:FindFirstChild(QuestSystem.SelectedToolFarm)
-        if Tool then
-            EquipTool(QuestSystem.SelectedToolFarm)
-        end
-        
-        if not QuestSystem.EnemySelectedFarm or not QuestSystem.EnemySelectedFarm.Parent or not QuestSystem.EnemySelectedFarm:FindFirstChild("Humanoid") or QuestSystem.EnemySelectedFarm.Humanoid.Health <= 0 then
-            QuestSystem.EnemySelectedFarm = FindValidEnemy()
-        end
-        
-        if QuestSystem.EnemySelectedFarm then
-            AttackEnemy(QuestSystem.EnemySelectedFarm)
-        end
+task.spawn(function()
+    if getgenv().LoadedMobileUI then return end
+    getgenv().LoadedMobileUI = true
+    local OpenUI = Instance.new("ScreenGui")
+    local ImageButton = Instance.new("ImageButton")
+    local UICorner = Instance.new("UICorner")
+    OpenUI.Name, OpenUI.Parent, OpenUI.ZIndexBehavior = "OpenUI", game:GetService("CoreGui"), Enum.ZIndexBehavior.Sibling
+    ImageButton.Parent, ImageButton.BackgroundColor3, ImageButton.BackgroundTransparency = OpenUI, Color3.fromRGB(105,105,105), 0.8
+    ImageButton.Position, ImageButton.Size, ImageButton.Image = UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://95816097006870"
+    ImageButton.Draggable, ImageButton.Transparency = true, 1
+    UICorner.CornerRadius, UICorner.Parent = UDim.new(0,200), ImageButton
+    ImageButton.MouseButton1Click:Connect(function()
+        game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game)
     end)
+end)
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "MicaHub",
+    SubTitle = "Vox Seas",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(570, 350),
+    Acrylic = false,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+Window:Minimize()
+
+local Home, Others, Settings = Window:AddTab({ Title = "Home", Icon = "home" }), Window:AddTab({ Title = "Others", Icon = "package" }), Window:AddTab({ Title = "Settings", Icon = "settings" })
+
+Home:AddSection("Automatic Functions")
+
+local function ExecuteAutoFarmQuests()
+    if not AutoFarmQuestsEnabled then return end
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+        RunService.Heartbeat:wait()
+        return ExecuteAutoFarmQuests()
+    end
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoFarmQuests()
 end
 
-Window:AddToggle({
-    text = "Take Fruits",
-    flag = "ToggleTakeFruits",
-    callback = function(ToggleState)
-        TakeFruitsEnabled = ToggleState
+local function ExecuteAutoBringMobs()
+    if not AutoBringMobsEnabled then return end
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+        RunService.Heartbeat:wait()
+        return ExecuteAutoBringMobs()
+    end
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoBringMobs()
+end
+
+local AutoFarmQuests = Home:AddToggle("AutoFarmQuests", {Title = "Auto Farm Quests", Default = false })
+AutoFarmQuests:OnChanged(function(StateFunctionPanel)
+    AutoFarmQuestsEnabled = StateFunctionPanel
+    if AutoFarmQuestsEnabled then task.spawn(ExecuteAutoFarmQuests) end
+end)
+
+local AutoBringMobs = Home:AddToggle("AutoBringMobs", {Title = "Auto Bring Mobs [BETA]", Default = false })
+AutoBringMobs:OnChanged(function(StateFunctionPanel)
+    AutoBringMobsEnabled = StateFunctionPanel
+    if AutoBringMobsEnabled then task.spawn(ExecuteAutoBringMobs) end
+end)
+
+local function FireTouchInterestForChests(character)
+    local ChestsPath = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
+    if not ChestsPath or not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    
+    for _, ChestPart in pairs(ChestsPath:GetChildren()) do
+        if ChestPart:IsA("BasePart") then
+            firetouchinterest(character.HumanoidRootPart, ChestPart, 0)
+            firetouchinterest(character.HumanoidRootPart, ChestPart, 1)
+        end
+    end
+end
+
+local function FireTouchInterestForFruits(character, tool)
+    if not character or not character:FindFirstChild("HumanoidRootPart") or not tool:IsA("Tool") or not tool:FindFirstChild("Handle") then return end
+    firetouchinterest(character.HumanoidRootPart, tool.Handle, 0)
+    firetouchinterest(character.HumanoidRootPart, tool.Handle, 1)
+end
+
+local TakeChests = Home:AddButton({
+    Title = "Take Chests",
+    Description = "Collect Chests Immediately",
+    Callback = function()
+        FireTouchInterestForChests(LocalPlayer.Character)
     end
 })
 
-Window:AddButton({
-    text = "Farm Panel",
-    flag = "ButtonFarmPanel",
-    callback = function()
-        if PanelFarmEnabled then return end
-        PanelFarmEnabled = true
-        
-        local LibraryFarm = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua", true))()
-        local WindowFarm = LibraryFarm:CreateWindow("Vox Farms")
-        
-        WindowFarm:AddList({
-            text = "Select Tools",
-            values = {"Combat", "Sword", "Gun"},
-            flag = "DropdownSelectTools",
-            callback = function(SelectedValue)
-                QuestSystem.SelectedToolFarm = SelectedValue
-            end,
-            open = false
-        })
-        
-        WindowFarm:AddList({
-            text = "Select Quest",
-            values = {"Bandits Hunter"},
-            flag = "DropdownSelectQuest",
-            callback = function(SelectedValue)
-                QuestSystem.SelectedQuestFarm = SelectedValue
-            end,
-            open = false
-        })
-        
-        WindowFarm:AddBox({
-            text = "Farm Quest Speed",
-            flag = "BoxFarmSpeed",
-            value = "5",
-            callback = function(BoxValue)
-                local SpeedValue = tonumber(BoxValue)
-                if SpeedValue and SpeedValue >= 1 and SpeedValue <= 10 then
-                    QuestSystem.EnemyFarmSpeed = SpeedValue
-                end
+Home:AddSection("Basic Settings")
+
+local SelectToolFarm = Home:AddDropdown("SelectToolFarm", {
+    Title = "Select Tool Farm",
+    Values = {"None Tools"},
+    Multi = false,
+    Default = 1,
+})
+
+local function GetCharacterTools()
+    if not LocalPlayer.Character then return {} end
+    local ToolsList = {}
+    
+    for _, container in pairs({LocalPlayer.Backpack, LocalPlayer.Character}) do
+        for _, Tool in pairs(container:GetChildren()) do
+            if Tool:IsA("Tool") and not Tool.Name:find("Fruit") then
+                table.insert(ToolsList, Tool.Name)
             end
-        })
-        
-        WindowFarm:AddToggle({
-            text = "Auto Quest [BETA]",
-            flag = "ToggleAutoQuest",
-            callback = function(ToggleState)
-                AutoQuestEnabled = ToggleState
-                
-                if AutoQuestEnabled then
-                    StartQuestSystem()
-                else
-                    DisconnectAllConnections()
-                    QuestSystem.EnemySelectedFarm = nil
-                end
-            end
-        })
-        
-        WindowFarm:AddButton({
-            text = "Close",
-            flag = "ButtonClose",
-            callback = function()
-                if not AutoQuestEnabled then
-                    LibraryFarm:Close()
-                    PanelFarmEnabled = false
-                end
-            end
-        })
-        
-        LibraryFarm:Init()
+        end
+    end
+    return ToolsList
+end
+
+local UpdateToolsList = Home:AddButton({
+    Title = "Update Tools List",
+    Description = "Update Tools Shown List",
+    Callback = function()
+        local ToolsList = GetCharacterTools()
+        if #ToolsList > 0 then
+            SelectToolFarm:SetValues(ToolsList)
+        end
     end
 })
 
-Window:AddLabel({
-    text = "GitHub: Mkklz-h",
-    type = "label"
+Others:AddSection("Fruits Functionality")
+
+local DroppedToolsFolder = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
+
+local function ExecuteAutoCollect()
+    if not AutoCollectFruitEnabled then return end
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+        RunService.Heartbeat:wait()
+        return ExecuteAutoCollect()
+    end
+    
+    for _, Tool in pairs(DroppedToolsFolder:GetChildren()) do
+        FireTouchInterestForFruits(LocalPlayer.Character, Tool)
+    end
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoCollect()
+end
+
+local AutoCollectFruit = Others:AddToggle("AutoCollectFruit", {Title = "Auto Collect Fruit", Default = false })
+AutoCollectFruit:OnChanged(function(StateFunctionPanel)
+    AutoCollectFruitEnabled = StateFunctionPanel
+    if AutoCollectFruitEnabled then task.spawn(ExecuteAutoCollect) end
+end)
+
+Others:AddSection("Automatic Status")
+
+local SelectStatus = Others:AddDropdown("SelectStatus", {
+    Title = "Select Status",
+    Values = {"None Status", "Defense", "Sword", "Gun", "Strength", "DevilFruit"},
+    Multi = false,
+    Default = 1,
 })
 
-Library:Init()
+SelectStatus:OnChanged(function(Value)
+    if Value ~= "None Status" then
+        SelectStatus:SetValues({"Defense", "Sword", "Gun", "Strength", "DevilFruit"})
+    end
+end)
+
+local function ExecuteAutoStatus()
+    if not AutoStatusEnabled then return end
+    
+    local SelectedStatus = SelectStatus.Value
+    if SelectedStatus == "None Status" then 
+        RunService.Heartbeat:wait()
+        return ExecuteAutoStatus()
+    end
+    
+    pcall(function()
+        local Args = {"UpgradeStat", {
+            Defense = SelectedStatus == "Defense" and 3 or 0,
+            Sword = SelectedStatus == "Sword" and 3 or 0,
+            Gun = SelectedStatus == "Gun" and 3 or 0,
+            Strength = SelectedStatus == "Strength" and 3 or 0,
+            DevilFruit = SelectedStatus == "DevilFruit" and 3 or 0
+        }}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(Args))
+    end)
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStatus()
+end
+
+local AutoStatusSelected = Others:AddToggle("AutoStatusSelected", {Title = "Auto Status Selected", Default = false })
+AutoStatusSelected:OnChanged(function(StateFunctionPanel)
+    AutoStatusEnabled = StateFunctionPanel
+    if AutoStatusEnabled then task.spawn(ExecuteAutoStatus) end
+end)
+
+Window:SelectTab(1)
