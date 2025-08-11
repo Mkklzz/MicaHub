@@ -1,17 +1,16 @@
-local ReplicatedStorage, Players, LocalPlayer, RunService = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService")
+if game.PlaceId ~= 104067066727140 then return end
+
+local ReplicatedStorage, Players, LocalPlayer, RunService, TweenService = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService"), game:GetService("TweenService")
 
 repeat RunService.Heartbeat:wait() until LocalPlayer.Character
 
 local Framework, MainModules = ReplicatedStorage:WaitForChild("Framework"), ReplicatedStorage:WaitForChild("MainModules")
-local AutoFarmQuestsEnabled, AutoBringMobsEnabled, AutoCollectFruitEnabled, AutoStatusEnabled = false, false, false, false
+local AutoFarmQuestsEnabled, AutoBringMobsEnabled, AutoCollectFruitEnabled, AutoStatusDefenseEnabled, AutoStatusSwordEnabled, AutoStatusGunEnabled, AutoStatusStrengthEnabled, AutoStatusDevilFruitEnabled = false, false, false, false, false, false, false, false
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-local function SetCharacterAttribute(char)
-    char:SetAttribute("IgnoreAntiTeleport", true)
-end
-
-SetCharacterAttribute(Character)
-LocalPlayer.CharacterAdded:Connect(SetCharacterAttribute)
+LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
+    Character = NewCharacter
+end)
 
 task.spawn(function()
     if getgenv().LoadedMobileUI then return end
@@ -29,9 +28,9 @@ task.spawn(function()
     end)
 end)
 
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local FluentLibrary = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
-local Window = Fluent:CreateWindow({
+local MainWindow = FluentLibrary:CreateWindow({
     Title = "MicaHub",
     SubTitle = "Vox Seas",
     TabWidth = 160,
@@ -41,11 +40,11 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-Window:Minimize()
+MainWindow:Minimize()
 
-local Home, Others, Settings = Window:AddTab({ Title = "Home", Icon = "home" }), Window:AddTab({ Title = "Others", Icon = "package" }), Window:AddTab({ Title = "Settings", Icon = "settings" })
+local HomeTab, OthersTab, SettingsTab = MainWindow:AddTab({ Title = "Home", Icon = "home" }), MainWindow:AddTab({ Title = "Others", Icon = "package" }), MainWindow:AddTab({ Title = "Settings", Icon = "settings" })
 
-Home:AddSection("Automatic Functions")
+HomeTab:AddSection("Automatic Functions")
 
 local function ExecuteAutoFarmQuests()
     if not AutoFarmQuestsEnabled then return end
@@ -69,37 +68,37 @@ local function ExecuteAutoBringMobs()
     return ExecuteAutoBringMobs()
 end
 
-local AutoFarmQuests = Home:AddToggle("AutoFarmQuests", {Title = "Auto Farm Quests", Default = false })
-AutoFarmQuests:OnChanged(function(StateFunctionPanel)
+local AutoFarmQuestsToggle = HomeTab:AddToggle("AutoFarmQuests", {Title = "Auto Farm Quests", Default = false })
+AutoFarmQuestsToggle:OnChanged(function(StateFunctionPanel)
     AutoFarmQuestsEnabled = StateFunctionPanel
     if AutoFarmQuestsEnabled then task.spawn(ExecuteAutoFarmQuests) end
 end)
 
-local AutoBringMobs = Home:AddToggle("AutoBringMobs", {Title = "Auto Bring Mobs [BETA]", Default = false })
-AutoBringMobs:OnChanged(function(StateFunctionPanel)
+local AutoBringMobsToggle = HomeTab:AddToggle("AutoBringMobs", {Title = "Auto Bring Mobs [BETA]", Default = false })
+AutoBringMobsToggle:OnChanged(function(StateFunctionPanel)
     AutoBringMobsEnabled = StateFunctionPanel
     if AutoBringMobsEnabled then task.spawn(ExecuteAutoBringMobs) end
 end)
 
-local function FireTouchInterestForChests(character)
+local function FireTouchInterestForChests(Character)
     local ChestsPath = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
-    if not ChestsPath or not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    if not ChestsPath or not Character or not Character:FindFirstChild("HumanoidRootPart") then return end
     
     for _, ChestPart in pairs(ChestsPath:GetChildren()) do
         if ChestPart:IsA("BasePart") then
-            firetouchinterest(character.HumanoidRootPart, ChestPart, 0)
-            firetouchinterest(character.HumanoidRootPart, ChestPart, 1)
+            firetouchinterest(Character.HumanoidRootPart, ChestPart, 0)
+            firetouchinterest(Character.HumanoidRootPart, ChestPart, 1)
         end
     end
 end
 
-local function FireTouchInterestForFruits(character, tool)
-    if not character or not character:FindFirstChild("HumanoidRootPart") or not tool:IsA("Tool") or not tool:FindFirstChild("Handle") then return end
-    firetouchinterest(character.HumanoidRootPart, tool.Handle, 0)
-    firetouchinterest(character.HumanoidRootPart, tool.Handle, 1)
+local function FireTouchInterestForFruits(Character, ToolObject)
+    if not Character or not Character:FindFirstChild("HumanoidRootPart") or not ToolObject:IsA("Tool") or not ToolObject:FindFirstChild("Handle") then return end
+    firetouchinterest(Character.HumanoidRootPart, ToolObject.Handle, 0)
+    firetouchinterest(Character.HumanoidRootPart, ToolObject.Handle, 1)
 end
 
-local TakeChests = Home:AddButton({
+local TakeChestsButton = HomeTab:AddButton({
     Title = "Take Chests",
     Description = "Collect Chests Immediately",
     Callback = function()
@@ -107,9 +106,9 @@ local TakeChests = Home:AddButton({
     end
 })
 
-Home:AddSection("Basic Settings")
+HomeTab:AddSection("Basic Settings")
 
-local SelectToolFarm = Home:AddDropdown("SelectToolFarm", {
+local SelectToolFarmDropdown = HomeTab:AddDropdown("SelectToolFarm", {
     Title = "Select Tool Farm",
     Values = {"None Tools"},
     Multi = false,
@@ -120,28 +119,28 @@ local function GetCharacterTools()
     if not LocalPlayer.Character then return {} end
     local ToolsList = {}
     
-    for _, container in pairs({LocalPlayer.Backpack, LocalPlayer.Character}) do
-        for _, Tool in pairs(container:GetChildren()) do
-            if Tool:IsA("Tool") and not Tool.Name:find("Fruit") then
-                table.insert(ToolsList, Tool.Name)
+    for _, ContainerObject in pairs({LocalPlayer.Backpack, LocalPlayer.Character}) do
+        for _, ToolObject in pairs(ContainerObject:GetChildren()) do
+            if ToolObject:IsA("Tool") and not ToolObject.Name:find("Fruit") then
+                table.insert(ToolsList, ToolObject.Name)
             end
         end
     end
     return ToolsList
 end
 
-local UpdateToolsList = Home:AddButton({
+local UpdateToolsListButton = HomeTab:AddButton({
     Title = "Update Tools List",
     Description = "Update Tools Shown List",
     Callback = function()
         local ToolsList = GetCharacterTools()
         if #ToolsList > 0 then
-            SelectToolFarm:SetValues(ToolsList)
+            SelectToolFarmDropdown:SetValues(ToolsList)
         end
     end
 })
 
-Others:AddSection("Fruits Functionality")
+OthersTab:AddSection("Fruits Functionality")
 
 local DroppedToolsFolder = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
 
@@ -152,63 +151,154 @@ local function ExecuteAutoCollect()
         return ExecuteAutoCollect()
     end
     
-    for _, Tool in pairs(DroppedToolsFolder:GetChildren()) do
-        FireTouchInterestForFruits(LocalPlayer.Character, Tool)
+    for _, ToolObject in pairs(DroppedToolsFolder:GetChildren()) do
+        FireTouchInterestForFruits(LocalPlayer.Character, ToolObject)
     end
     
     RunService.Heartbeat:wait()
     return ExecuteAutoCollect()
 end
 
-local AutoCollectFruit = Others:AddToggle("AutoCollectFruit", {Title = "Auto Collect Fruit", Default = false })
-AutoCollectFruit:OnChanged(function(StateFunctionPanel)
+local AutoCollectFruitToggle = OthersTab:AddToggle("AutoCollectFruit", {Title = "Auto Collect Fruit", Default = false })
+AutoCollectFruitToggle:OnChanged(function(StateFunctionPanel)
     AutoCollectFruitEnabled = StateFunctionPanel
     if AutoCollectFruitEnabled then task.spawn(ExecuteAutoCollect) end
 end)
 
-Others:AddSection("Automatic Status")
+OthersTab:AddSection("Teleporting World")
 
-local SelectStatus = Others:AddDropdown("SelectStatus", {
-    Title = "Select Status",
-    Values = {"None Status", "Defense", "Sword", "Gun", "Strength", "DevilFruit"},
+local function GetPortalLocations()
+    local PortalFolder = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
+    if not PortalFolder then return {} end
+    
+    local LocationsList = {}
+    for _, PortalPart in pairs(PortalFolder:GetChildren()) do
+        if PortalPart:IsA("BasePart") then
+            table.insert(LocationsList, PortalPart.Name)
+        end
+    end
+    return LocationsList
+end
+
+local SelectTeleportLocationDropdown = OthersTab:AddDropdown("SelectTeleportLocation", {
+    Title = "Select Teleport Location",
+    Values = GetPortalLocations(),
     Multi = false,
     Default = 1,
 })
 
-SelectStatus:OnChanged(function(Value)
-    if Value ~= "None Status" then
-        SelectStatus:SetValues({"Defense", "Sword", "Gun", "Strength", "DevilFruit"})
+local TeleportToLocationButton = OthersTab:AddButton({
+    Title = "Teleport to Location [BETA]",
+    Description = "Teleport to Selected Island",
+    Callback = function()
+        local SelectedLocation = SelectTeleportLocationDropdown.Value
+        if not SelectedLocation or not LocalPlayer.Character then return end
+        
+        local PortalFolder = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
+        if not PortalFolder then return end
+        
+        local TargetPortal = PortalFolder:FindFirstChild(SelectedLocation)
+        if not TargetPortal or not TargetPortal:IsA("BasePart") then return end
+        
+        LocalPlayer.Character:PivotTo(TargetPortal.CFrame)
     end
-end)
+})
 
-local function ExecuteAutoStatus()
-    if not AutoStatusEnabled then return end
-    
-    local SelectedStatus = SelectStatus.Value
-    if SelectedStatus == "None Status" then 
-        RunService.Heartbeat:wait()
-        return ExecuteAutoStatus()
-    end
+OthersTab:AddSection("Automatic Status")
+
+local function ExecuteAutoStatusDefense()
+    if not AutoStatusDefenseEnabled then return end
     
     pcall(function()
-        local Args = {"UpgradeStat", {
-            Defense = SelectedStatus == "Defense" and 3 or 0,
-            Sword = SelectedStatus == "Sword" and 3 or 0,
-            Gun = SelectedStatus == "Gun" and 3 or 0,
-            Strength = SelectedStatus == "Strength" and 3 or 0,
-            DevilFruit = SelectedStatus == "DevilFruit" and 3 or 0
-        }}
-        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(Args))
+        local StatusArguments = {Defense = 1, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 0}
+        local RemoteArguments = {"UpgradeStat", StatusArguments}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(RemoteArguments))
     end)
     
     RunService.Heartbeat:wait()
-    return ExecuteAutoStatus()
+    return ExecuteAutoStatusDefense()
 end
 
-local AutoStatusSelected = Others:AddToggle("AutoStatusSelected", {Title = "Auto Status Selected", Default = false })
-AutoStatusSelected:OnChanged(function(StateFunctionPanel)
-    AutoStatusEnabled = StateFunctionPanel
-    if AutoStatusEnabled then task.spawn(ExecuteAutoStatus) end
+local function ExecuteAutoStatusSword()
+    if not AutoStatusSwordEnabled then return end
+    
+    pcall(function()
+        local StatusArguments = {Defense = 0, Sword = 1, Gun = 0, Strength = 0, DevilFruit = 0}
+        local RemoteArguments = {"UpgradeStat", StatusArguments}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(RemoteArguments))
+    end)
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStatusSword()
+end
+
+local function ExecuteAutoStatusGun()
+    if not AutoStatusGunEnabled then return end
+    
+    pcall(function()
+        local StatusArguments = {Defense = 0, Sword = 0, Gun = 1, Strength = 0, DevilFruit = 0}
+        local RemoteArguments = {"UpgradeStat", StatusArguments}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(RemoteArguments))
+    end)
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStatusGun()
+end
+
+local function ExecuteAutoStatusStrength()
+    if not AutoStatusStrengthEnabled then return end
+    
+    pcall(function()
+        local StatusArguments = {Defense = 0, Sword = 0, Gun = 0, Strength = 1, DevilFruit = 0}
+        local RemoteArguments = {"UpgradeStat", StatusArguments}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(RemoteArguments))
+    end)
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStatusStrength()
+end
+
+local function ExecuteAutoStatusDevilFruit()
+    if not AutoStatusDevilFruitEnabled then return end
+    
+    pcall(function()
+        local StatusArguments = {Defense = 0, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 1}
+        local RemoteArguments = {"UpgradeStat", StatusArguments}
+        ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer(unpack(RemoteArguments))
+    end)
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStatusDevilFruit()
+end
+
+local AutoStatusDefenseToggle = OthersTab:AddToggle("AutoStatusDefense", {Title = "Auto Status Defense", Default = false })
+AutoStatusDefenseToggle:OnChanged(function(StateFunctionPanel)
+    AutoStatusDefenseEnabled = StateFunctionPanel
+    if AutoStatusDefenseEnabled then task.spawn(ExecuteAutoStatusDefense) end
 end)
 
-Window:SelectTab(1)
+local AutoStatusSwordToggle = OthersTab:AddToggle("AutoStatusSword", {Title = "Auto Status Sword", Default = false })
+AutoStatusSwordToggle:OnChanged(function(StateFunctionPanel)
+    AutoStatusSwordEnabled = StateFunctionPanel
+    if AutoStatusSwordEnabled then task.spawn(ExecuteAutoStatusSword) end
+end)
+
+local AutoStatusGunToggle = OthersTab:AddToggle("AutoStatusGun", {Title = "Auto Status Gun", Default = false })
+AutoStatusGunToggle:OnChanged(function(StateFunctionPanel)
+    AutoStatusGunEnabled = StateFunctionPanel
+    if AutoStatusGunEnabled then task.spawn(ExecuteAutoStatusGun) end
+end)
+
+local AutoStatusStrengthToggle = OthersTab:AddToggle("AutoStatusStrength", {Title = "Auto Status Strength", Default = false })
+AutoStatusStrengthToggle:OnChanged(function(StateFunctionPanel)
+    AutoStatusStrengthEnabled = StateFunctionPanel
+    if AutoStatusStrengthEnabled then task.spawn(ExecuteAutoStatusStrength) end
+end)
+
+local AutoStatusDevilFruitToggle = OthersTab:AddToggle("AutoStatusDevilFruit", {Title = "Auto Status DevilFruit", Default = false })
+AutoStatusDevilFruitToggle:OnChanged(function(StateFunctionPanel)
+    AutoStatusDevilFruitEnabled = StateFunctionPanel
+    if AutoStatusDevilFruitEnabled then task.spawn(ExecuteAutoStatusDevilFruit) end
+end)
+
+MainWindow:SelectTab(1)
