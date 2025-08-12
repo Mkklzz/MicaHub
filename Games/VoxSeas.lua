@@ -5,7 +5,7 @@ local ReplicatedStorage, Players, LocalPlayer, RunService, TweenService = game:G
 repeat RunService.Heartbeat:wait() until LocalPlayer.Character
 
 local Framework, MainModules = ReplicatedStorage:WaitForChild("Framework"), ReplicatedStorage:WaitForChild("MainModules")
-local AutoFarmQuestsEnabled, AutoBringMobsEnabled, AutoCollectFruitEnabled, AutoStatusDefenseEnabled, AutoStatusSwordEnabled, AutoStatusGunEnabled, AutoStatusStrengthEnabled, AutoStatusDevilFruitEnabled = false, false, false, false, false, false, false, false
+local AutoFarmQuestsEnabled, AutoBringMobsEnabled, AutoCollectFruitEnabled, AutoStoreFruitsEnabled, AutoStatusDefenseEnabled, AutoStatusSwordEnabled, AutoStatusGunEnabled, AutoStatusStrengthEnabled, AutoStatusDevilFruitEnabled = false, false, false, false, false, false, false, false, false
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
 LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
@@ -159,10 +159,27 @@ local function ExecuteAutoCollect()
     return ExecuteAutoCollect()
 end
 
-local AutoCollectFruitToggle = OthersTab:AddToggle("AutoCollectFruit", {Title = "Auto Collect Fruit", Default = false })
+local AutoCollectFruitToggle = OthersTab:AddToggle("AutoCollectFruit", {Title = "Auto Collect Fruits", Default = false })
 AutoCollectFruitToggle:OnChanged(function(StateFunctionPanel)
     AutoCollectFruitEnabled = StateFunctionPanel
     if AutoCollectFruitEnabled then task.spawn(ExecuteAutoCollect) end
+end)
+
+local function ExecuteAutoStoreFruits()
+    if not AutoStoreFruitsEnabled then return end
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+        RunService.Heartbeat:wait()
+        return ExecuteAutoStoreFruits()
+    end
+    
+    RunService.Heartbeat:wait()
+    return ExecuteAutoStoreFruits()
+end
+
+local AutoStoreFruitsToggle = OthersTab:AddToggle("AutoStoreFruits", {Title = "Auto Store Fruits", Default = false })
+AutoStoreFruitsToggle:OnChanged(function(StateFunctionPanel)
+    AutoStoreFruitsEnabled = StateFunctionPanel
+    if AutoStoreFruitsEnabled then task.spawn(ExecuteAutoStoreFruits) end
 end)
 
 OthersTab:AddSection("Teleporting World")
@@ -300,5 +317,48 @@ AutoStatusDevilFruitToggle:OnChanged(function(StateFunctionPanel)
     AutoStatusDevilFruitEnabled = StateFunctionPanel
     if AutoStatusDevilFruitEnabled then task.spawn(ExecuteAutoStatusDevilFruit) end
 end)
+
+SettingsTab:AddSection("Https Servers Connections")
+
+SettingsTab:AddParagraph({
+    Title = "How does it work?",
+    Content = "Join servers with specific items using the code available on our Discord."
+})
+
+local ServerCodeInput = SettingsTab:AddInput("ServerCode", {
+    Title = "Target Server Code",
+    Default = "",
+    Placeholder = "",
+    Numeric = false,
+    Finished = false,
+})
+
+local JoinServerButton = SettingsTab:AddButton({
+    Title = "Join the Server",
+    Description = "Use this button to connect to the server",
+    Callback = function()
+        MainWindow:Dialog({
+            Title = "Https Servers Connections",
+            Content = "Are you sure you want to connect?",
+            Buttons = {
+                {
+                    Title = "Confirm",
+                    Callback = function()
+                        local ServerCode = ServerCodeInput.Value
+                        if ServerCode and ServerCode ~= "" then
+                            pcall(function()
+                                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, ServerCode, LocalPlayer)
+                            end)
+                        end
+                    end
+                },
+                {
+                    Title = "Cancel",
+                    Callback = function() end
+                }
+            }
+        })
+    end
+})
 
 MainWindow:SelectTab(1)
