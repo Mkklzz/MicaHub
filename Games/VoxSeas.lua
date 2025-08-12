@@ -99,10 +99,25 @@ local function FireTouchInterestForFruits(Character, ToolObject)
 end
 
 local TakeChestsButton = HomeTab:AddButton({
-    Title = "Take Chests",
+    Title = "Take All Chests",
     Description = "Collect Chests Immediately",
     Callback = function()
         FireTouchInterestForChests(LocalPlayer.Character)
+    end
+})
+
+local RedeemAllCodesButton = HomeTab:AddButton({
+    Title = "Redeem All Codes",
+    Description = "Redeem all available codes in the game!",
+    Callback = function()
+        local CodesList = {"BugFix1", "BugFix2", "BugFix3", "Update3"}
+        
+        for _, CodeName in pairs(CodesList) do
+            pcall(function()
+                local CodeArguments = {"Redeem", CodeName}
+                ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer(unpack(CodeArguments))
+            end)
+        end
     end
 })
 
