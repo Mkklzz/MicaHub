@@ -28,9 +28,13 @@ task.spawn(function()
     getgenv().LoadedMobileUserInterfaceContainer = true
     local MobileUIScreenGuiContainer, MobileToggleButtonElement, MobileButtonCornerRadiusElement = Instance.new("ScreenGui"), Instance.new("ImageButton"), Instance.new("UICorner")
     MobileUIScreenGuiContainer.Name, MobileUIScreenGuiContainer.Parent, MobileUIScreenGuiContainer.ZIndexBehavior = "MobileUIScreenGui", game:GetService("CoreGui"), Enum.ZIndexBehavior.Sibling
-    MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://95816097006870", true, 1
+    MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://14513659000", true, 1
     MobileButtonCornerRadiusElement.CornerRadius, MobileButtonCornerRadiusElement.Parent = UDim.new(0,200), MobileToggleButtonElement
-    MobileToggleButtonElement.MouseButton1Click:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game) end)
+    MobileToggleButtonElement.MouseButton1Click:Connect(function() 
+        local UserInputService = game:GetService("UserInputService")
+        UserInputService:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+        UserInputService:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+    end)
 end)
 
 local FluentLibraryInterfaceContainer = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -301,7 +305,7 @@ end
 
 local TeleportationDestinationSelectionDropdownReference = OthersTabContainerReference:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocationsContainer(), Multi = false, Default = 1})
 
-OthersTabContainerReference:AddButton({Title = "Teleport to Location [ANTICHEAT DE MERDA]", Description = "Teleport to Selected Island", Callback = function()
+OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
     if AutomatedQuestFarmingActivationState or AutomatedMobBringingActivationState then
         PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm Quests and Auto Bring Mobs before teleporting.", Buttons = {
             {Title = "Ok", Callback = function() end}
