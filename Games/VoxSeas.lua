@@ -9,6 +9,7 @@ repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
 local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState = false, false, false, false, false, false, false, false, false, false
 local CurrentCharacterInstanceReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
+local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
 
 LocalPlayerReference.CharacterAdded:Connect(function(NewlySpawnedCharacterInstance) CurrentCharacterInstanceReference = NewlySpawnedCharacterInstance end)
 
@@ -74,6 +75,26 @@ local function ProcessSingleFruit()
     return false
 end
 
+local function GetAvailableTool()
+    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
+        local ToolReference = LocalPlayerReference.Backpack:FindFirstChild(ToolNameIdentifier) or LocalPlayerReference.Character:FindFirstChild(ToolNameIdentifier)
+        if ToolReference then return ToolReference end
+    end
+    
+    for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
+        for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
+            if IndividualToolObjectInstance:IsA("Tool") then
+                for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
+                    if IndividualToolObjectInstance.Name:find(ToolNameIdentifier) then
+                        return IndividualToolObjectInstance
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
 local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     if not AutomatedQuestFarmingActivationState then return end
     if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
@@ -83,28 +104,7 @@ local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     if ProcessSingleFruit() then
         return ExecuteAutomatedQuestFarmingProcedureRoutine()
     end
-    local EquippedToolObjectReference = nil
-    local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
-    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
-        EquippedToolObjectReference = LocalPlayerReference.Backpack:FindFirstChild(ToolNameIdentifier) or LocalPlayerReference.Character:FindFirstChild(ToolNameIdentifier)
-        if EquippedToolObjectReference then break end
-    end
-    if not EquippedToolObjectReference then
-        for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
-            for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
-                if IndividualToolObjectInstance:IsA("Tool") then
-                    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
-                        if IndividualToolObjectInstance.Name:find(ToolNameIdentifier) then
-                            EquippedToolObjectReference = IndividualToolObjectInstance
-                            break
-                        end
-                    end
-                    if EquippedToolObjectReference then break end
-                end
-            end
-            if EquippedToolObjectReference then break end
-        end
-    end
+    local EquippedToolObjectReference = GetAvailableTool()
     if EquippedToolObjectReference and EquippedToolObjectReference:IsA("Tool") and EquippedToolObjectReference.Parent == LocalPlayerReference.Backpack then 
         LocalPlayerReference.Character.Humanoid:EquipTool(EquippedToolObjectReference) 
     end
@@ -157,6 +157,16 @@ HomeTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "
 end})
 
 HomeTabContainerReference:AddSection("Basic Settings")
+
+local function IsToolInAvailableList(ToolNameParameter)
+    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
+        if ToolNameParameter == ToolNameIdentifier or ToolNameParameter:find(ToolNameIdentifier) then
+            return true
+        end
+    end
+    return false
+end
+
 HomeTabContainerReference:AddButton({Title = "Remove Waiting Time", Description = "Now the tools don't have any more Cooldown set! Your attacks will now be powerful.", Callback = function()
     if CooldownRemovalExecutedState then
         PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cooldown removal has already been executed! This function can only be used once per session to prevent conflicts.", Buttons = {
@@ -166,14 +176,13 @@ HomeTabContainerReference:AddButton({Title = "Remove Waiting Time", Description 
     end
     pcall(function()
         local MainModulesContainer = require(ReplicatedStorageServiceReference.MainModules)
-        hookfunction(MainModulesContainer.CombatHandler.IsCooldown, function(ToolNameParameter)
-            local CurrentEquippedToolReference = LocalPlayerReference.Character and LocalPlayerReference.Character:FindFirstChildOfClass("Tool")
-            if CurrentEquippedToolReference and CurrentEquippedToolReference.Name == ToolNameParameter then
+        local OriginalIsCooldownFunction = MainModulesContainer.CombatHandler.IsCooldown
+        MainModulesContainer.CombatHandler.IsCooldown = function(ToolNameParameter)
+            if IsToolInAvailableList(ToolNameParameter) then
                 return false
             end
-            return false
-        end)
-        RunServiceReference.Heartbeat:Wait()
+            return OriginalIsCooldownFunction(ToolNameParameter)
+        end
         CooldownRemovalExecutedState = true
     end)
 end})
@@ -199,31 +208,27 @@ local StatusUpgradeRoutinesContainer = {
     DevilFruit = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedDevilFruitStatusUpgradeActivationState end, {Defense = 0, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 1})
 }
 
-local function CreateStatusUpgradeToggleConfiguration(StatusNameIdentifier, GlobalVariableNameReference, RoutineFunctionReference)
+local StatusActivationStates = {
+    Defense = function(value) AutomatedDefenseStatusUpgradeActivationState = value end,
+    Sword = function(value) AutomatedSwordStatusUpgradeActivationState = value end,
+    Gun = function(value) AutomatedGunStatusUpgradeActivationState = value end,
+    Strength = function(value) AutomatedStrengthStatusUpgradeActivationState = value end,
+    DevilFruit = function(value) AutomatedDevilFruitStatusUpgradeActivationState = value end
+}
+
+local function CreateStatusUpgradeToggleConfiguration(StatusNameIdentifier)
     local ToggleControlReference = StatusTabContainerReference:AddToggle("Automated" .. StatusNameIdentifier .. "StatusUpgrade", {Title = "Auto Status " .. StatusNameIdentifier, Default = false})
     ToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
-        if StatusNameIdentifier == "Defense" then
-            AutomatedDefenseStatusUpgradeActivationState = ToggleActivationStateValue
-        elseif StatusNameIdentifier == "Sword" then
-            AutomatedSwordStatusUpgradeActivationState = ToggleActivationStateValue
-        elseif StatusNameIdentifier == "Gun" then
-            AutomatedGunStatusUpgradeActivationState = ToggleActivationStateValue
-        elseif StatusNameIdentifier == "Strength" then
-            AutomatedStrengthStatusUpgradeActivationState = ToggleActivationStateValue
-        elseif StatusNameIdentifier == "DevilFruit" then
-            AutomatedDevilFruitStatusUpgradeActivationState = ToggleActivationStateValue
-        end
+        StatusActivationStates[StatusNameIdentifier](ToggleActivationStateValue)
         if ToggleActivationStateValue then 
-            task.spawn(RoutineFunctionReference) 
+            task.spawn(StatusUpgradeRoutinesContainer[StatusNameIdentifier]) 
         end 
     end)
 end
 
-CreateStatusUpgradeToggleConfiguration("Defense", "AutomatedDefenseStatusUpgradeActivationState", StatusUpgradeRoutinesContainer.Defense)
-CreateStatusUpgradeToggleConfiguration("Sword", "AutomatedSwordStatusUpgradeActivationState", StatusUpgradeRoutinesContainer.Sword)
-CreateStatusUpgradeToggleConfiguration("Gun", "AutomatedGunStatusUpgradeActivationState", StatusUpgradeRoutinesContainer.Gun)
-CreateStatusUpgradeToggleConfiguration("Strength", "AutomatedStrengthStatusUpgradeActivationState", StatusUpgradeRoutinesContainer.Strength)
-CreateStatusUpgradeToggleConfiguration("DevilFruit", "AutomatedDevilFruitStatusUpgradeActivationState", StatusUpgradeRoutinesContainer.DevilFruit)
+for StatusName, _ in pairs(StatusUpgradeRoutinesContainer) do
+    CreateStatusUpgradeToggleConfiguration(StatusName)
+end
 
 OthersTabContainerReference:AddSection("Fruits Functionality")
 
