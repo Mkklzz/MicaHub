@@ -301,7 +301,7 @@ end
 
 local TeleportationDestinationSelectionDropdownReference = OthersTabContainerReference:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocationsContainer(), Multi = false, Default = 1})
 
-OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
+OthersTabContainerReference:AddButton({Title = "Teleport to Location [ANTICHEAT DE MERDA]", Description = "Teleport to Selected Island", Callback = function()
     if AutomatedQuestFarmingActivationState or AutomatedMobBringingActivationState then
         PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm Quests and Auto Bring Mobs before teleporting.", Buttons = {
             {Title = "Ok", Callback = function() end}
