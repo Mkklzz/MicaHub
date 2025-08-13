@@ -1,0 +1,18 @@
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local MainModules = require(ReplicatedStorage.MainModules)
+
+local CheckCooldown = hookfunction(MainModules.CombatHandler.IsCooldown, function(ToolName)
+    local EquippedTool = Player.Character and Player.Character:FindFirstChildOfClass("Tool")
+    
+    if EquippedTool and EquippedTool.Name == ToolName then
+        return false
+    end
+    
+    return CheckCooldown(ToolName)
+end)
+
+RunService.Heartbeat:Wait()
