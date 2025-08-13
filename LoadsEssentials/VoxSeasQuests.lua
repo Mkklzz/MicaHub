@@ -416,4 +416,12 @@ function QuestManagementModuleContainer.UpdateQuestStatus(QuestNpcNameParameter,
     return false
 end
 
-function QuestManagementModuleContainer.GetQuestByLevel
+function QuestManagementModuleContainer.GetQuestByLevel(PlayerLevelParameter)
+    return SearchForSuitableQuestBasedOnPlayerLevelRequirementsValidation(PlayerLevelParameter)
+end
+
+function QuestManagementModuleContainer.IsQuestManagementActive()
+    return QuestManagementActiveStatusReference
+end
+
+return QuestManagementModuleContainer
