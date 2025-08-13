@@ -1,6 +1,6 @@
-local QuestManagementModule = {}
+local QuestManagementModuleContainer = {}
 
-local AutomatedQuestManagementSystemDatabase = {
+local AutomatedQuestManagementSystemDatabaseContainer = {
     ["Bandits Hunter"] = {
         QuestDescriptionIdentifier = "Defeat Bandits",
         RequiredPlayerLevelRange = {1, 25},
@@ -52,131 +52,131 @@ local AutomatedQuestManagementSystemDatabase = {
     }
 }
 
-local QuestManagementActiveStatus = false
-local QuestLevelMonitoringConnection = nil
+local QuestManagementActiveStatusReference = false
+local QuestLevelMonitoringConnectionReference = nil
 
-local function ExecuteQuestCancellationProcessForCurrentActiveQuest()
-    if not getgenv().MicaHubMainInterface then return end
+local function ExecuteQuestCancellationProcessForCurrentActiveQuestRoutine()
+    if not getgenv().MicaHubMainInterfaceContainer then return end
     
-    local QuestCancellationArgumentsTable = {"CancelQuest"}
-    getgenv().MicaHubMainInterface.RemoteConnections.QuestEvent:FireServer(unpack(QuestCancellationArgumentsTable))
+    local QuestCancellationArgumentsTableReference = {"CancelQuest"}
+    getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.QuestEventReference:FireServer(unpack(QuestCancellationArgumentsTableReference))
     
-    for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
-        if QuestInformationDataTable.CurrentQuestActivationStatus then
-            QuestInformationDataTable.CurrentQuestActivationStatus = false
+    for QuestNpcIdentifierNameReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
+        if QuestInformationDataTableContainer.CurrentQuestActivationStatus then
+            QuestInformationDataTableContainer.CurrentQuestActivationStatus = false
             break
         end
     end
 end
 
-local function ExecuteQuestActivationProcessBySpecificNpcName(SelectedTargetNpcName, QuestDescriptionText)
-    if not getgenv().MicaHubMainInterface then return end
+local function ExecuteQuestActivationProcessBySpecificNpcNameRoutine(SelectedTargetNpcNameReference, QuestDescriptionTextReference)
+    if not getgenv().MicaHubMainInterfaceContainer then return end
     
-    local QuestActivationArgumentsTable = {
+    local QuestActivationArgumentsTableConfiguration = {
         "Quests",
         {
-            NpcName = SelectedTargetNpcName,
-            QuestName = QuestDescriptionText
+            NpcName = SelectedTargetNpcNameReference,
+            QuestName = QuestDescriptionTextReference
         }
     }
-    getgenv().MicaHubMainInterface.RemoteConnections.DialogueEvent:FireServer(unpack(QuestActivationArgumentsTable))
+    getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.DialogueEventReference:FireServer(unpack(QuestActivationArgumentsTableConfiguration))
     
-    AutomatedQuestManagementSystemDatabase[SelectedTargetNpcName].CurrentQuestActivationStatus = true
+    AutomatedQuestManagementSystemDatabaseContainer[SelectedTargetNpcNameReference].CurrentQuestActivationStatus = true
 end
 
-local function SearchForSuitableQuestBasedOnPlayerLevelRequirements(CurrentPlayerLevelValue)
-    for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
-        local MinimumRequiredPlayerLevel = QuestInformationDataTable.RequiredPlayerLevelRange[1]
-        local MaximumRequiredPlayerLevel = QuestInformationDataTable.RequiredPlayerLevelRange[2]
+local function SearchForSuitableQuestBasedOnPlayerLevelRequirementsValidation(CurrentPlayerLevelValueReference)
+    for QuestNpcIdentifierNameReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
+        local MinimumRequiredPlayerLevelValue = QuestInformationDataTableContainer.RequiredPlayerLevelRange[1]
+        local MaximumRequiredPlayerLevelValue = QuestInformationDataTableContainer.RequiredPlayerLevelRange[2]
         
-        if CurrentPlayerLevelValue >= MinimumRequiredPlayerLevel and CurrentPlayerLevelValue <= MaximumRequiredPlayerLevel then
-            return QuestNpcIdentifierName, QuestInformationDataTable
+        if CurrentPlayerLevelValueReference >= MinimumRequiredPlayerLevelValue and CurrentPlayerLevelValueReference <= MaximumRequiredPlayerLevelValue then
+            return QuestNpcIdentifierNameReference, QuestInformationDataTableContainer
         end
     end
     return nil, nil
 end
 
-local function ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel()
-    if not QuestManagementActiveStatus then return end
-    if not getgenv().MicaHubMainInterface then return end
-    if not getgenv().MicaHubMainInterface.ToggleStates.QuestFarming() then return end
+local function ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine()
+    if not QuestManagementActiveStatusReference then return end
+    if not getgenv().MicaHubMainInterfaceContainer then return end
+    if not getgenv().MicaHubMainInterfaceContainer.ToggleStatesContainer.QuestFarmingActivation() then return end
     
-    local CurrentPlayerLevelValue = getgenv().MicaHubMainInterface.PlayerReferences.PlayerLevel()
-    local SuitableQuestNpcIdentifierName, SuitableQuestInformationDataTable = SearchForSuitableQuestBasedOnPlayerLevelRequirements(CurrentPlayerLevelValue)
+    local CurrentPlayerLevelValueReference = getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.PlayerLevelValue()
+    local SuitableQuestNpcIdentifierNameReference, SuitableQuestInformationDataTableContainer = SearchForSuitableQuestBasedOnPlayerLevelRequirementsValidation(CurrentPlayerLevelValueReference)
     
-    if SuitableQuestNpcIdentifierName and not SuitableQuestInformationDataTable.CurrentQuestActivationStatus then
-        for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
-            if QuestInformationDataTable.CurrentQuestActivationStatus and QuestNpcIdentifierName ~= SuitableQuestNpcIdentifierName then
-                ExecuteQuestCancellationProcessForCurrentActiveQuest()
+    if SuitableQuestNpcIdentifierNameReference and not SuitableQuestInformationDataTableContainer.CurrentQuestActivationStatus then
+        for QuestNpcIdentifierNameReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
+            if QuestInformationDataTableContainer.CurrentQuestActivationStatus and QuestNpcIdentifierNameReference ~= SuitableQuestNpcIdentifierNameReference then
+                ExecuteQuestCancellationProcessForCurrentActiveQuestRoutine()
                 break
             end
         end
         
-        local HasCurrentlyActiveQuestStatus = false
-        for _, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
-            if QuestInformationDataTable.CurrentQuestActivationStatus then
-                HasCurrentlyActiveQuestStatus = true
+        local HasCurrentlyActiveQuestStatusValidation = false
+        for _, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
+            if QuestInformationDataTableContainer.CurrentQuestActivationStatus then
+                HasCurrentlyActiveQuestStatusValidation = true
                 break
             end
         end
         
-        if not HasCurrentlyActiveQuestStatus then
-            ExecuteQuestActivationProcessBySpecificNpcName(SuitableQuestNpcIdentifierName, SuitableQuestInformationDataTable.QuestDescriptionIdentifier)
+        if not HasCurrentlyActiveQuestStatusValidation then
+            ExecuteQuestActivationProcessBySpecificNpcNameRoutine(SuitableQuestNpcIdentifierNameReference, SuitableQuestInformationDataTableContainer.QuestDescriptionIdentifier)
         end
     end
 end
 
-function QuestManagementModule.StartQuestManagement()
-    if QuestManagementActiveStatus then return end
+function QuestManagementModuleContainer.StartQuestManagement()
+    if QuestManagementActiveStatusReference then return end
     
-    QuestManagementActiveStatus = true
-    ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel()
+    QuestManagementActiveStatusReference = true
+    ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine()
     
-    if getgenv().MicaHubMainInterface and getgenv().MicaHubMainInterface.PlayerReferences.LocalPlayer then
-        local PlayerLevelDisplayElement = getgenv().MicaHubMainInterface.PlayerReferences.LocalPlayer.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
-        QuestLevelMonitoringConnection = PlayerLevelDisplayElement:GetPropertyChangedSignal("Text"):Connect(ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel)
+    if getgenv().MicaHubMainInterfaceContainer and getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.LocalPlayerInstance then
+        local PlayerLevelDisplayElementReference = getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.LocalPlayerInstance.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
+        QuestLevelMonitoringConnectionReference = PlayerLevelDisplayElementReference:GetPropertyChangedSignal("Text"):Connect(ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine)
     end
 end
 
-function QuestManagementModule.StopQuestManagement()
-    if not QuestManagementActiveStatus then return end
+function QuestManagementModuleContainer.StopQuestManagement()
+    if not QuestManagementActiveStatusReference then return end
     
-    QuestManagementActiveStatus = false
-    ExecuteQuestCancellationProcessForCurrentActiveQuest()
+    QuestManagementActiveStatusReference = false
+    ExecuteQuestCancellationProcessForCurrentActiveQuestRoutine()
     
-    if QuestLevelMonitoringConnection then
-        QuestLevelMonitoringConnection:Disconnect()
-        QuestLevelMonitoringConnection = nil
+    if QuestLevelMonitoringConnectionReference then
+        QuestLevelMonitoringConnectionReference:Disconnect()
+        QuestLevelMonitoringConnectionReference = nil
     end
 end
 
-function QuestManagementModule.GetQuestDatabase()
-    return AutomatedQuestManagementSystemDatabase
+function QuestManagementModuleContainer.GetQuestDatabase()
+    return AutomatedQuestManagementSystemDatabaseContainer
 end
 
-function QuestManagementModule.GetCurrentActiveQuest()
-    for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
-        if QuestInformationDataTable.CurrentQuestActivationStatus then
-            return QuestNpcIdentifierName, QuestInformationDataTable
+function QuestManagementModuleContainer.GetCurrentActiveQuest()
+    for QuestNpcIdentifierNameReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
+        if QuestInformationDataTableContainer.CurrentQuestActivationStatus then
+            return QuestNpcIdentifierNameReference, QuestInformationDataTableContainer
         end
     end
     return nil, nil
 end
 
-function QuestManagementModule.UpdateQuestStatus(QuestNpcName, NewStatus)
-    if AutomatedQuestManagementSystemDatabase[QuestNpcName] then
-        AutomatedQuestManagementSystemDatabase[QuestNpcName].CurrentQuestActivationStatus = NewStatus
+function QuestManagementModuleContainer.UpdateQuestStatus(QuestNpcNameParameter, NewStatusParameter)
+    if AutomatedQuestManagementSystemDatabaseContainer[QuestNpcNameParameter] then
+        AutomatedQuestManagementSystemDatabaseContainer[QuestNpcNameParameter].CurrentQuestActivationStatus = NewStatusParameter
         return true
     end
     return false
 end
 
-function QuestManagementModule.GetQuestByLevel(PlayerLevel)
-    return SearchForSuitableQuestBasedOnPlayerLevelRequirements(PlayerLevel)
+function QuestManagementModuleContainer.GetQuestByLevel(PlayerLevelParameter)
+    return SearchForSuitableQuestBasedOnPlayerLevelRequirementsValidation(PlayerLevelParameter)
 end
 
-function QuestManagementModule.IsQuestManagementActive()
-    return QuestManagementActiveStatus
+function QuestManagementModuleContainer.IsQuestManagementActive()
+    return QuestManagementActiveStatusReference
 end
 
-return QuestManagementModule
+return QuestManagementModuleContainer
