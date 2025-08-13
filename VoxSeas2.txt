@@ -1,0 +1,405 @@
+if game.PlaceId ~= 104067066727140 then 
+    loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))():Notify({Title = "MicaHub Information", Content = "You're not on Vox Seas, idiot! Run the script on Vox Seas!", Duration = 8})
+    return 
+end
+
+local ReplicatedStorageService, PlayersService, LocalPlayerReference, RunServiceReference, TweenServiceReference = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService"), game:GetService("TweenService")
+
+repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
+
+local GameFrameworkModule, MainModulesContainer = ReplicatedStorageService:WaitForChild("Framework"), ReplicatedStorageService:WaitForChild("MainModules")
+local AutomatedQuestFarmingEnabled, AutomatedMobBringingEnabled, AutomatedFruitCollectionEnabled, AutomatedFruitStorageEnabled, AutomatedDefenseStatusUpgradeEnabled, AutomatedSwordStatusUpgradeEnabled, AutomatedGunStatusUpgradeEnabled, AutomatedStrengthStatusUpgradeEnabled, AutomatedDevilFruitStatusUpgradeEnabled = false, false, false, false, false, false, false, false, false
+local CurrentCharacterReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
+
+LocalPlayerReference.CharacterAdded:Connect(function(NewlySpawnedCharacter) CurrentCharacterReference = NewlySpawnedCharacter end)
+
+local AutomatedQuestManagementSystemDatabase = {
+    ["Bandits Hunter"] = {
+        QuestDescriptionIdentifier = "Defeat Bandits",
+        RequiredPlayerLevelRange = {1, 25},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = false,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Foosha Village"]
+    },
+    ["Mark Hunter"] = {
+        QuestDescriptionIdentifier = "Defeat Shadow Werewolfs",
+        RequiredPlayerLevelRange = {25, 50},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = false,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Werewolf's Island"]
+    },
+    ["Mark Hunter Forest"] = {
+        QuestDescriptionIdentifier = "Defeat Forest Hunters",
+        RequiredPlayerLevelRange = {50, 75},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = false,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Werewolf's Island"]
+    },
+    ["Mark Hunter King"] = {
+        QuestDescriptionIdentifier = "Defeat King Werewolf",
+        RequiredPlayerLevelRange = {75, 100},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = true,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Werewolf's Island"]
+    },
+    ["Joy Pirate Hunter Bills"] = {
+        QuestDescriptionIdentifier = "Defeat Pirate Bills",
+        RequiredPlayerLevelRange = {100, 125},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = false,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Orange Town"]
+    },
+    ["Joy Pirate Hunter Officer"] = {
+        QuestDescriptionIdentifier = "Defeat Pirate Officer",
+        RequiredPlayerLevelRange = {125, 150},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = false,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Orange Town"]
+    },
+    ["Joy Pirate Hunter Clown"] = {
+        QuestDescriptionIdentifier = "Defeat Mad Clown",
+        RequiredPlayerLevelRange = {150, 175},
+        CurrentQuestActivationStatus = false,
+        EnemyBossTypeClassification = true,
+        EnemyFarmingLocationReference = workspace.Playability.Enemys["Orange Town"]
+    }
+}
+
+local BetweenSidesRemoteConnectionFolder = ReplicatedStorageService:WaitForChild("BetweenSides")
+local RemoteEventsCommunicationFolder = BetweenSidesRemoteConnectionFolder:WaitForChild("Remotes")
+local GameEventHandlersContainer = RemoteEventsCommunicationFolder:WaitForChild("Events")
+local DialogueSystemRemoteEventHandler = GameEventHandlersContainer:WaitForChild("DialogueEvent")
+local QuestManagementRemoteEventHandler = GameEventHandlersContainer:WaitForChild("QuestEvent")
+
+local PlayerLevelDisplayElementReference = LocalPlayerReference.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
+
+task.spawn(function()
+    if getgenv().LoadedMobileUserInterface then return end
+    getgenv().LoadedMobileUserInterface = true
+    local MobileUIScreenGui, MobileToggleButton, MobileButtonCornerRadius = Instance.new("ScreenGui"), Instance.new("ImageButton"), Instance.new("UICorner")
+    MobileUIScreenGui.Name, MobileUIScreenGui.Parent, MobileUIScreenGui.ZIndexBehavior = "MobileUIScreenGui", game:GetService("CoreGui"), Enum.ZIndexBehavior.Sibling
+    MobileToggleButton.Parent, MobileToggleButton.BackgroundColor3, MobileToggleButton.BackgroundTransparency, MobileToggleButton.Position, MobileToggleButton.Size, MobileToggleButton.Image, MobileToggleButton.Draggable, MobileToggleButton.Transparency = MobileUIScreenGui, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://95816097006870", true, 1
+    MobileButtonCornerRadius.CornerRadius, MobileButtonCornerRadius.Parent = UDim.new(0,200), MobileToggleButton
+    MobileToggleButton.MouseButton1Click:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game) end)
+end)
+
+local FluentLibraryInterface = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local PrimaryDashboardWindow = FluentLibraryInterface:CreateWindow({Title = "MicaHub", SubTitle = "Vox Seas", TabWidth = 160, Size = UDim2.fromOffset(570, 350), Acrylic = false, Theme = "Dark", MinimizeKey = Enum.KeyCode.LeftControl})
+PrimaryDashboardWindow:Minimize()
+
+local AuthorTabContainer, HomeTabContainer, StatusTabContainer, OthersTabContainer, SettingsTabContainer = PrimaryDashboardWindow:AddTab({ Title = "Author", Icon = "user" }), PrimaryDashboardWindow:AddTab({ Title = "Home", Icon = "home" }), PrimaryDashboardWindow:AddTab({ Title = "Status", Icon = "trending-up" }), PrimaryDashboardWindow:AddTab({ Title = "Others", Icon = "layers" }), PrimaryDashboardWindow:AddTab({ Title = "Settings", Icon = "settings" })
+
+AuthorTabContainer:AddSection("Author Information")
+AuthorTabContainer:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
+AuthorTabContainer:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
+
+AuthorTabContainer:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
+    PrimaryDashboardWindow:Dialog({Title = "Discord link copied", Content = "The Discord link has been copied to your clipboard. You can now paste it in your browser to join the server.", Buttons = {
+        {Title = "Ok", Callback = function() end}
+    }})
+    setclipboard("https://discord.gg/yfsKgGYU4e")
+end})
+
+HomeTabContainer:AddSection("Automatic Functions")
+
+local ToolSelectionForFarmingDropdown = HomeTabContainer:AddDropdown("ToolSelectionForFarming", {Title = "Select Tool Farm", Values = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}, Multi = false, Default = "Combat"})
+
+local function ExecuteQuestCancellationProcessForCurrentActiveQuest()
+    local QuestCancellationArgumentsTable = {"CancelQuest"}
+    QuestManagementRemoteEventHandler:FireServer(unpack(QuestCancellationArgumentsTable))
+    
+    for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
+        if QuestInformationDataTable.CurrentQuestActivationStatus then
+            QuestInformationDataTable.CurrentQuestActivationStatus = false
+            break
+        end
+    end
+end
+
+local function ExecuteQuestActivationProcessBySpecificNpcName(SelectedTargetNpcName, QuestDescriptionText)
+    local QuestActivationArgumentsTable = {
+        "Quests",
+        {
+            NpcName = SelectedTargetNpcName,
+            QuestName = QuestDescriptionText
+        }
+    }
+    DialogueSystemRemoteEventHandler:FireServer(unpack(QuestActivationArgumentsTable))
+    
+    AutomatedQuestManagementSystemDatabase[SelectedTargetNpcName].CurrentQuestActivationStatus = true
+end
+
+local function RetrieveCurrentPlayerLevelFromUserInterface()
+    return tonumber(PlayerLevelDisplayElementReference.Text) or 1
+end
+
+local function SearchForSuitableQuestBasedOnPlayerLevelRequirements(CurrentPlayerLevelValue)
+    for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
+        local MinimumRequiredPlayerLevel = QuestInformationDataTable.RequiredPlayerLevelRange[1]
+        local MaximumRequiredPlayerLevel = QuestInformationDataTable.RequiredPlayerLevelRange[2]
+        
+        if CurrentPlayerLevelValue >= MinimumRequiredPlayerLevel and CurrentPlayerLevelValue <= MaximumRequiredPlayerLevel then
+            return QuestNpcIdentifierName, QuestInformationDataTable
+        end
+    end
+    return nil, nil
+end
+
+local function ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel()
+    if not AutomatedQuestFarmingEnabled then return end
+    
+    local CurrentPlayerLevelValue = RetrieveCurrentPlayerLevelFromUserInterface()
+    local SuitableQuestNpcIdentifierName, SuitableQuestInformationDataTable = SearchForSuitableQuestBasedOnPlayerLevelRequirements(CurrentPlayerLevelValue)
+    
+    if SuitableQuestNpcIdentifierName and not SuitableQuestInformationDataTable.CurrentQuestActivationStatus then
+        for QuestNpcIdentifierName, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
+            if QuestInformationDataTable.CurrentQuestActivationStatus and QuestNpcIdentifierName ~= SuitableQuestNpcIdentifierName then
+                ExecuteQuestCancellationProcessForCurrentActiveQuest()
+                break
+            end
+        end
+        
+        local HasCurrentlyActiveQuestStatus = false
+        for _, QuestInformationDataTable in pairs(AutomatedQuestManagementSystemDatabase) do
+            if QuestInformationDataTable.CurrentQuestActivationStatus then
+                HasCurrentlyActiveQuestStatus = true
+                break
+            end
+        end
+        
+        if not HasCurrentlyActiveQuestStatus then
+            ExecuteQuestActivationProcessBySpecificNpcName(SuitableQuestNpcIdentifierName, SuitableQuestInformationDataTable.QuestDescriptionIdentifier)
+        end
+    end
+end
+
+local function ExecuteAutomatedQuestFarmingRoutine()
+    if not AutomatedQuestFarmingEnabled then return end
+    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then RunServiceReference.Heartbeat:wait() return ExecuteAutomatedQuestFarmingRoutine() end
+    
+    local SelectedToolName = ToolSelectionForFarmingDropdown.Value
+    if SelectedToolName and SelectedToolName ~= "" then
+        local EquippedTool = LocalPlayerReference.Character:FindFirstChild(SelectedToolName) or LocalPlayerReference.Backpack:FindFirstChild(SelectedToolName)
+        
+        if not EquippedTool then
+            local AvailableToolsList = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
+            for _, ToolName in pairs(AvailableToolsList) do
+                EquippedTool = LocalPlayerReference.Backpack:FindFirstChild(ToolName) or LocalPlayerReference.Character:FindFirstChild(ToolName)
+                if EquippedTool then break end
+            end
+            
+            if not EquippedTool then
+                for _, ToolContainerObject in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
+                    for _, IndividualToolObject in pairs(ToolContainerObject:GetChildren()) do
+                        if IndividualToolObject:IsA("Tool") then
+                            for _, ToolName in pairs(AvailableToolsList) do
+                                if IndividualToolObject.Name:find(ToolName) then
+                                    EquippedTool = IndividualToolObject
+                                    break
+                                end
+                            end
+                            if EquippedTool then break end
+                        end
+                    end
+                    if EquippedTool then break end
+                end
+            end
+        end
+        
+        if EquippedTool and EquippedTool:IsA("Tool") and EquippedTool.Parent == LocalPlayerReference.Backpack then 
+            LocalPlayerReference.Character.Humanoid:EquipTool(EquippedTool) 
+        end
+    end
+    
+    RunServiceReference.Heartbeat:wait() return ExecuteAutomatedQuestFarmingRoutine()
+end
+
+local AutomatedQuestFarmingToggleControl = HomeTabContainer:AddToggle("AutomatedQuestFarming", {Title = "Auto Farm Quests", Default = false })
+AutomatedQuestFarmingToggleControl:OnChanged(function(ToggleActivationState) 
+    AutomatedQuestFarmingEnabled = ToggleActivationState 
+    if AutomatedQuestFarmingEnabled then 
+        task.spawn(ExecuteAutomatedQuestFarmingRoutine)
+        ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel()
+        PlayerLevelDisplayElementReference:GetPropertyChangedSignal("Text"):Connect(ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevel)
+    else
+        ExecuteQuestCancellationProcessForCurrentActiveQuest()
+    end
+end)
+
+local AutomatedMobBringingToggleControl = HomeTabContainer:AddToggle("AutomatedMobBringing", {Title = "Auto Bring Mobs [BETA]", Default = false })
+AutomatedMobBringingToggleControl:OnChanged(function(ToggleActivationState) AutomatedMobBringingEnabled = ToggleActivationState end)
+
+local function ExecuteTouchInterestForGameChests(PlayerCharacterReference)
+    local ChestContainerPath = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
+    if not ChestContainerPath or not PlayerCharacterReference or not PlayerCharacterReference:FindFirstChild("HumanoidRootPart") then return end
+    for _, IndividualChestPart in pairs(ChestContainerPath:GetChildren()) do
+        if IndividualChestPart:IsA("BasePart") then firetouchinterest(PlayerCharacterReference.HumanoidRootPart, IndividualChestPart, 0) firetouchinterest(PlayerCharacterReference.HumanoidRootPart, IndividualChestPart, 1) end
+    end
+end
+
+local function ExecuteTouchInterestForDroppedFruits(PlayerCharacterReference, DroppedToolObject)
+    if not PlayerCharacterReference or not PlayerCharacterReference:FindFirstChild("HumanoidRootPart") or not DroppedToolObject:IsA("Tool") or not DroppedToolObject:FindFirstChild("Handle") then return end
+    firetouchinterest(PlayerCharacterReference.HumanoidRootPart, DroppedToolObject.Handle, 0) firetouchinterest(PlayerCharacterReference.HumanoidRootPart, DroppedToolObject.Handle, 1)
+end
+
+HomeTabContainer:AddButton({Title = "Take All Chests", Description = "Collect Chests Immediately", Callback = function() ExecuteTouchInterestForGameChests(LocalPlayerReference.Character) end})
+
+HomeTabContainer:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
+    for _, IndividualCodeIdentifier in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
+        pcall(function() ReplicatedStorageService:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifier) end)
+    end
+end})
+
+HomeTabContainer:AddSection("Basic Settings")
+
+local function RetrieveAvailableCharacterTools()
+    if not LocalPlayerReference.Character then return {} end
+    local AvailableToolsList = {}
+    local ValidToolNames = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
+    
+    for _, ToolContainerObject in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
+        for _, IndividualToolObject in pairs(ToolContainerObject:GetChildren()) do
+            if IndividualToolObject:IsA("Tool") then
+                for _, ValidToolName in pairs(ValidToolNames) do
+                    if IndividualToolObject.Name:find(ValidToolName) then
+                        local alreadyExists = false
+                        for _, ExistingTool in pairs(AvailableToolsList) do
+                            if ExistingTool == IndividualToolObject.Name then
+                                alreadyExists = true
+                                break
+                            end
+                        end
+                        if not alreadyExists then
+                            table.insert(AvailableToolsList, IndividualToolObject.Name)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return AvailableToolsList
+end
+
+local BasicSettingsToolDropdown = HomeTabContainer:AddDropdown("BasicSettingsToolSelection", {Title = "Select Tool Farm", Values = {"None Tools"}, Multi = false, Default = "None Tools"})
+
+HomeTabContainer:AddButton({Title = "Update Tools List", Description = "Refresh and update the available tools list with your current inventory", Callback = function()
+    local CurrentAvailableToolsList = RetrieveAvailableCharacterTools()
+    if #CurrentAvailableToolsList > 0 then
+        BasicSettingsToolDropdown:SetValues(CurrentAvailableToolsList)
+    end
+end})
+
+StatusTabContainer:AddSection("Automatic Status")
+
+local function CreateAutomatedStatusUpgradeRoutine(StatusType, StatusTable)
+    return function()
+        if not StatusType then return end
+        pcall(function() ReplicatedStorageService:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer("UpgradeStat", StatusTable) end)
+        RunServiceReference.Heartbeat:wait() return CreateAutomatedStatusUpgradeRoutine(StatusType, StatusTable)()
+    end
+end
+
+local StatusUpgradeRoutines = {
+    Defense = CreateAutomatedStatusUpgradeRoutine(function() return AutomatedDefenseStatusUpgradeEnabled end, {Defense = 1, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 0}),
+    Sword = CreateAutomatedStatusUpgradeRoutine(function() return AutomatedSwordStatusUpgradeEnabled end, {Defense = 0, Sword = 1, Gun = 0, Strength = 0, DevilFruit = 0}),
+    Gun = CreateAutomatedStatusUpgradeRoutine(function() return AutomatedGunStatusUpgradeEnabled end, {Defense = 0, Sword = 0, Gun = 1, Strength = 0, DevilFruit = 0}),
+    Strength = CreateAutomatedStatusUpgradeRoutine(function() return AutomatedStrengthStatusUpgradeEnabled end, {Defense = 0, Sword = 0, Gun = 0, Strength = 1, DevilFruit = 0}),
+    DevilFruit = CreateAutomatedStatusUpgradeRoutine(function() return AutomatedDevilFruitStatusUpgradeEnabled end, {Defense = 0, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 1})
+}
+
+local function CreateStatusToggle(StatusName, VariableName, RoutineFunction)
+    local Toggle = StatusTabContainer:AddToggle("Automated" .. StatusName .. "StatusUpgrade", {Title = "Auto Status " .. StatusName, Default = false})
+    Toggle:OnChanged(function(ToggleActivationState) 
+        _G[VariableName] = ToggleActivationState 
+        if ToggleActivationState then task.spawn(RoutineFunction) end 
+    end)
+end
+
+CreateStatusToggle("Defense", "AutomatedDefenseStatusUpgradeEnabled", StatusUpgradeRoutines.Defense)
+CreateStatusToggle("Sword", "AutomatedSwordStatusUpgradeEnabled", StatusUpgradeRoutines.Sword)
+CreateStatusToggle("Gun", "AutomatedGunStatusUpgradeEnabled", StatusUpgradeRoutines.Gun)
+CreateStatusToggle("Strength", "AutomatedStrengthStatusUpgradeEnabled", StatusUpgradeRoutines.Strength)
+CreateStatusToggle("DevilFruit", "AutomatedDevilFruitStatusUpgradeEnabled", StatusUpgradeRoutines.DevilFruit)
+
+OthersTabContainer:AddSection("Fruits Functionality")
+
+local DroppedToolsWorkspaceContainer = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
+
+local function ExecuteAutomatedFruitCollectionRoutine()
+    if not AutomatedFruitCollectionEnabled then return end
+    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then RunServiceReference.Heartbeat:wait() return ExecuteAutomatedFruitCollectionRoutine() end
+    for _, IndividualDroppedToolObject in pairs(DroppedToolsWorkspaceContainer:GetChildren()) do ExecuteTouchInterestForDroppedFruits(LocalPlayerReference.Character, IndividualDroppedToolObject) end
+    RunServiceReference.Heartbeat:wait() return ExecuteAutomatedFruitCollectionRoutine()
+end
+
+local AutomatedFruitCollectionToggleControl = OthersTabContainer:AddToggle("AutomatedFruitCollection", {Title = "Auto Collect Fruits", Default = false })
+AutomatedFruitCollectionToggleControl:OnChanged(function(ToggleActivationState) AutomatedFruitCollectionEnabled = ToggleActivationState if AutomatedFruitCollectionEnabled then task.spawn(ExecuteAutomatedFruitCollectionRoutine) end end)
+
+local function ExecuteAutomatedFruitStorageRoutine()
+    if not AutomatedFruitStorageEnabled then return end
+    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then RunServiceReference.Heartbeat:wait() return ExecuteAutomatedFruitStorageRoutine() end
+    
+    for _, ToolContainerObject in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
+        for _, IndividualToolObject in pairs(ToolContainerObject:GetChildren()) do
+            if IndividualToolObject:IsA("Tool") and IndividualToolObject.Name:match("Fruit$") then
+                if LocalPlayerReference.Character.Humanoid then
+                    LocalPlayerReference.Character.Humanoid:EquipTool(IndividualToolObject)
+                    pcall(function() ReplicatedStorageService:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") end)
+                end
+            end
+        end
+    end
+    
+    RunServiceReference.Heartbeat:wait() return ExecuteAutomatedFruitStorageRoutine()
+end
+
+local AutomatedFruitStorageToggleControl = OthersTabContainer:AddToggle("AutomatedFruitStorage", {Title = "Auto Store Fruits", Default = false })
+AutomatedFruitStorageToggleControl:OnChanged(function(ToggleActivationState) AutomatedFruitStorageEnabled = ToggleActivationState if AutomatedFruitStorageEnabled then task.spawn(ExecuteAutomatedFruitStorageRoutine) end end)
+
+OthersTabContainer:AddSection("Teleporting World")
+
+local function RetrieveAvailablePortalLocations()
+    local PortalContainerFolder = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
+    if not PortalContainerFolder then return {} end
+    local AvailableLocationsList = {}
+    for _, IndividualPortalPart in pairs(PortalContainerFolder:GetChildren()) do
+        if IndividualPortalPart:IsA("BasePart") then table.insert(AvailableLocationsList, IndividualPortalPart.Name) end
+    end
+    return AvailableLocationsList
+end
+
+local TeleportationDestinationSelectionDropdown = OthersTabContainer:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocations(), Multi = false, Default = 1})
+
+OthersTabContainer:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
+    if AutomatedQuestFarmingEnabled or AutomatedMobBringingEnabled then
+        PrimaryDashboardWindow:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm Quests and Auto Bring Mobs before teleporting.", Buttons = {
+            {Title = "Ok", Callback = function() end}
+        }})
+        return
+    end
+    
+    local SelectedTeleportationDestination = TeleportationDestinationSelectionDropdown.Value
+    if not SelectedTeleportationDestination or not LocalPlayerReference.Character then return end
+    local PortalContainerFolder = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
+    if not PortalContainerFolder then return end
+    local TargetPortalDestination = PortalContainerFolder:FindFirstChild(SelectedTeleportationDestination)
+    if not TargetPortalDestination or not TargetPortalDestination:IsA("BasePart") then return end
+    LocalPlayerReference.Character:PivotTo(TargetPortalDestination.CFrame)
+end})
+
+OthersTabContainer:AddSection("Https Servers Connections")
+OthersTabContainer:AddParagraph({Title = "How does it work?", Content = "Join servers with specific items using the code available on our Discord."})
+
+local ServerConnectionCodeInputField = OthersTabContainer:AddInput("ServerConnectionCode", {Title = "Target Server Code", Default = "", Placeholder = "", Numeric = false, Finished = false})
+
+OthersTabContainer:AddButton({Title = "Join the Server", Description = "Use this button to connect to the server", Callback = function()
+    PrimaryDashboardWindow:Dialog({Title = "Https Servers Connections", Content = "Are you sure you want to connect?", Buttons = {
+        {Title = "Confirm", Callback = function()
+            local ProvidedServerCode = ServerConnectionCodeInputField.Value
+            if ProvidedServerCode and ProvidedServerCode ~= "" then pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, ProvidedServerCode, LocalPlayerReference) end) end
+        end},
+        {Title = "Cancel", Callback = function() end}
+    }})
+end})
+
+PrimaryDashboardWindow:SelectTab(1)
