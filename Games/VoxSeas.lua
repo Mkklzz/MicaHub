@@ -34,7 +34,7 @@ task.spawn(function()
 end)
 
 local FluentLibraryInterfaceContainer = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local PrimaryDashboardWindowInstance = FluentLibraryInterfaceContainer:CreateWindow({Title = "MicaHub", SubTitle = "Vox Seas", TabWidth = 160, Size = UDim2.fromOffset(570, 350), Acrylic = false, Theme = "Dark", MinimizeKey = Enum.KeyCode.LeftControl})
+local PrimaryDashboardWindowInstance = FluentLibraryInterfaceContainer:CreateWindow({Title = "MicaHub", SubTitle = "Vox Seas", TabWidth = 160, Size = UDim2.fromOffset(550, 330), Acrylic = false, Theme = "Dark", MinimizeKey = Enum.KeyCode.LeftControl})
 PrimaryDashboardWindowInstance:Minimize()
 
 local AuthorTabContainerReference, HomeTabContainerReference, StatusTabContainerReference, OthersTabContainerReference, SettingsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Author", Icon = "user" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Home", Icon = "home" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Status", Icon = "trending-up" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Others", Icon = "layers" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Settings", Icon = "settings" })
