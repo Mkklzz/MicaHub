@@ -4,7 +4,6 @@ if game.PlaceId ~= 104067066727140 then
 end
 
 local ReplicatedStorageServiceReference, PlayersServiceReference, LocalPlayerReference, RunServiceReference, TweenServiceReference = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService"), game:GetService("TweenService")
-
 repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
 
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
@@ -21,7 +20,6 @@ local RemoteEventsCommunicationFolderContainer = BetweenSidesRemoteConnectionFol
 local GameEventHandlersContainerReference = RemoteEventsCommunicationFolderContainer:WaitForChild("Events")
 local DialogueSystemRemoteEventHandlerReference = GameEventHandlersContainerReference:WaitForChild("DialogueEvent")
 local QuestManagementRemoteEventHandlerReference = GameEventHandlersContainerReference:WaitForChild("QuestEvent")
-
 local PlayerLevelDisplayElementReference = LocalPlayerReference.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
 
 task.spawn(function()
@@ -43,7 +41,6 @@ local AuthorTabContainerReference, HomeTabContainerReference, StatusTabContainer
 AuthorTabContainerReference:AddSection("Author Information")
 AuthorTabContainerReference:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
 AuthorTabContainerReference:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
-
 AuthorTabContainerReference:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
     PrimaryDashboardWindowInstance:Dialog({Title = "Discord link copied", Content = "The Discord link has been copied to your clipboard. You can now paste it in your browser to join the server.", Buttons = {
         {Title = "Ok", Callback = function() end}
@@ -53,21 +50,45 @@ end})
 
 HomeTabContainerReference:AddSection("Automatic Functions")
 
+local function ProcessSingleFruit()
+    for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
+        for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
+            if IndividualToolObjectInstance:IsA("Tool") and IndividualToolObjectInstance.Name:match("Fruit$") then
+                if IndividualToolObjectInstance.Parent == LocalPlayerReference.Backpack then
+                    LocalPlayerReference.Character.Humanoid:EquipTool(IndividualToolObjectInstance)
+                    RunServiceReference.Heartbeat:wait()
+                end
+                local FruitReference = IndividualToolObjectInstance
+                pcall(function() 
+                    ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") 
+                end)
+                RunServiceReference.Heartbeat:wait()
+                RunServiceReference.Heartbeat:wait()
+                if FruitReference and FruitReference.Parent then
+                    pcall(function() FruitReference:Destroy() end)
+                end
+                return true
+            end
+        end
+    end
+    return false
+end
+
 local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     if not AutomatedQuestFarmingActivationState then return end
     if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
         RunServiceReference.Heartbeat:wait() 
         return ExecuteAutomatedQuestFarmingProcedureRoutine() 
     end
-    
+    if ProcessSingleFruit() then
+        return ExecuteAutomatedQuestFarmingProcedureRoutine()
+    end
     local EquippedToolObjectReference = nil
     local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
-    
     for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
         EquippedToolObjectReference = LocalPlayerReference.Backpack:FindFirstChild(ToolNameIdentifier) or LocalPlayerReference.Character:FindFirstChild(ToolNameIdentifier)
         if EquippedToolObjectReference then break end
     end
-    
     if not EquippedToolObjectReference then
         for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
             for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
@@ -84,11 +105,9 @@ local function ExecuteAutomatedQuestFarmingProcedureRoutine()
             if EquippedToolObjectReference then break end
         end
     end
-    
     if EquippedToolObjectReference and EquippedToolObjectReference:IsA("Tool") and EquippedToolObjectReference.Parent == LocalPlayerReference.Backpack then 
         LocalPlayerReference.Character.Humanoid:EquipTool(EquippedToolObjectReference) 
     end
-    
     RunServiceReference.Heartbeat:wait()
     return ExecuteAutomatedQuestFarmingProcedureRoutine()
 end
@@ -129,7 +148,6 @@ local function ExecuteTouchInterestForDroppedFruitsCollection(PlayerCharacterIns
 end
 
 HomeTabContainerReference:AddButton({Title = "Take All Chests", Description = "Collect Chests Immediately", Callback = function() ExecuteTouchInterestForGameChestsCollection(LocalPlayerReference.Character) end})
-
 HomeTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
     for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
         pcall(function() 
@@ -173,7 +191,6 @@ local function CreateStatusUpgradeToggleConfiguration(StatusNameIdentifier, Glob
         elseif StatusNameIdentifier == "DevilFruit" then
             AutomatedDevilFruitStatusUpgradeActivationState = ToggleActivationStateValue
         end
-        
         if ToggleActivationStateValue then 
             task.spawn(RoutineFunctionReference) 
         end 
@@ -215,30 +232,13 @@ local AutomatedFruitStorageCoroutineReference
 local function ExecuteAutomatedFruitStorageProcedureRoutine()
     if not AutomatedFruitStorageActivationState then return end
     if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
-        task.wait(1)
+        RunServiceReference.Heartbeat:wait()
         return ExecuteAutomatedFruitStorageProcedureRoutine() 
     end
-    
-    local FruitFoundAndProcessedSuccessfully = false
-    for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
-        for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
-            if IndividualToolObjectInstance:IsA("Tool") and IndividualToolObjectInstance.Name:match("Fruit$") then
-                if LocalPlayerReference.Character.Humanoid and IndividualToolObjectInstance.Parent == LocalPlayerReference.Backpack then
-                    LocalPlayerReference.Character.Humanoid:EquipTool(IndividualToolObjectInstance)
-                    task.wait(0.5)
-                end
-                pcall(function() 
-                    ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") 
-                end)
-                FruitFoundAndProcessedSuccessfully = true
-                task.wait(0.3)
-                break
-            end
-        end
-        if FruitFoundAndProcessedSuccessfully then break end
+    if ProcessSingleFruit() then
+        return ExecuteAutomatedFruitStorageProcedureRoutine()
     end
-    
-    task.wait(2)
+    RunServiceReference.Heartbeat:wait()
     return ExecuteAutomatedFruitStorageProcedureRoutine()
 end
 
@@ -281,7 +281,6 @@ OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", De
         }})
         return
     end
-    
     local SelectedTeleportationDestinationValue = TeleportationDestinationSelectionDropdownReference.Value
     if not SelectedTeleportationDestinationValue or not LocalPlayerReference.Character then return end
     local PortalContainerFolderReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
