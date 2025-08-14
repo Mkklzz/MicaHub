@@ -7,10 +7,9 @@ local ReplicatedStorageServiceReference, PlayersServiceReference, LocalPlayerRef
 repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
 
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
-local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState = false, false, false, false, false, false, false, false, false, false, false
+local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState, TweenServiceSpeedValue, CodesRedeemedExecutedState = false, false, false, false, false, false, false, false, false, false, false, 5, false
 local CurrentCharacterInstanceReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
 local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
-local TweenServiceSpeedValue = 5
 
 LocalPlayerReference.CharacterAdded:Connect(function(NewlySpawnedCharacterInstance) CurrentCharacterInstanceReference = NewlySpawnedCharacterInstance end)
 
@@ -150,11 +149,23 @@ end
 
 HomeTabContainerReference:AddButton({Title = "Take All Chests", Description = "Collect Chests Immediately", Callback = function() ExecuteTouchInterestForGameChestsCollection(LocalPlayerReference.Character) end})
 HomeTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
-    for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
-        pcall(function() 
-            ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifierString) 
-        end)
+    if CodesRedeemedExecutedState then
+        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "All codes have already been redeemed! This function can only be used once per session to prevent spam.", Buttons = {
+            {Title = "Ok", Callback = function() end}
+        }})
+        return
     end
+    PrimaryDashboardWindowInstance:Dialog({Title = "Redeem All Codes", Content = "Are you sure you want to redeem all available codes?", Buttons = {
+        {Title = "Confirm", Callback = function()
+            for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
+                pcall(function() 
+                    ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifierString) 
+                end)
+            end
+            CodesRedeemedExecutedState = true
+        end},
+        {Title = "Cancel", Callback = function() end}
+    }})
 end})
 
 HomeTabContainerReference:AddSection("Basic Settings")
@@ -280,79 +291,4 @@ AutomatedFruitStorageToggleControlReference:OnChanged(function(ToggleActivationS
         AutomatedFruitStorageCoroutineReference = task.spawn(ExecuteAutomatedFruitStorageProcedureRoutine)
     else
         if AutomatedFruitStorageCoroutineReference then
-            task.cancel(AutomatedFruitStorageCoroutineReference)
-            AutomatedFruitStorageCoroutineReference = nil
-        end
-    end
-end)
-
-OthersTabContainerReference:AddSection("Teleporting World")
-
-local function RetrieveAvailablePortalLocationsContainer()
-    local PortalContainerFolderReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
-    if not PortalContainerFolderReference then return {} end
-    local AvailableLocationsListContainer = {}
-    for _, IndividualPortalPartInstance in pairs(PortalContainerFolderReference:GetChildren()) do
-        if IndividualPortalPartInstance:IsA("BasePart") then 
-            table.insert(AvailableLocationsListContainer, IndividualPortalPartInstance.Name) 
-        end
-    end
-    return AvailableLocationsListContainer
-end
-
-local TeleportationDestinationSelectionDropdownReference = OthersTabContainerReference:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocationsContainer(), Multi = false, Default = 1})
-
-OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
-    if AutomatedQuestFarmingActivationState or AutomatedMobBringingActivationState then
-        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm Quests and Auto Bring Mobs before teleporting.", Buttons = {
-            {Title = "Ok", Callback = function() end}
-        }})
-        return
-    end
-    local SelectedTeleportationDestinationValue = TeleportationDestinationSelectionDropdownReference.Value
-    if not SelectedTeleportationDestinationValue or not LocalPlayerReference.Character then return end
-    local PortalContainerFolderReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
-    if not PortalContainerFolderReference then return end
-    local TargetPortalDestinationReference = PortalContainerFolderReference:FindFirstChild(SelectedTeleportationDestinationValue)
-    if not TargetPortalDestinationReference or not TargetPortalDestinationReference:IsA("BasePart") then return end
-    LocalPlayerReference.Character:PivotTo(TargetPortalDestinationReference.CFrame)
-end})
-
-OthersTabContainerReference:AddSection("Https Servers Connections")
-OthersTabContainerReference:AddParagraph({Title = "How does it work?", Content = "Join servers with specific items using the code available on our Discord."})
-
-local ServerConnectionCodeInputFieldReference = OthersTabContainerReference:AddInput("ServerConnectionCode", {Title = "Target Server Code", Default = "", Placeholder = "", Numeric = false, Finished = false})
-
-OthersTabContainerReference:AddButton({Title = "Join the Server", Description = "Use this button to connect to the server", Callback = function()
-    PrimaryDashboardWindowInstance:Dialog({Title = "Https Servers Connections", Content = "Are you sure you want to connect?", Buttons = {
-        {Title = "Confirm", Callback = function()
-            local ProvidedServerCodeValue = ServerConnectionCodeInputFieldReference.Value
-            if ProvidedServerCodeValue and ProvidedServerCodeValue ~= "" then 
-                pcall(function() 
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, ProvidedServerCodeValue, LocalPlayerReference) 
-                end) 
-            end
-        end},
-        {Title = "Cancel", Callback = function() end}
-    }})
-end})
-
-getgenv().MicaHubMainInterfaceContainer = {
-    ToggleStatesContainer = {
-        QuestFarmingActivation = function() return AutomatedQuestFarmingActivationState end,
-        MobBringingActivation = function() return AutomatedMobBringingActivationState end,
-        FruitCollectionActivation = function() return AutomatedFruitCollectionActivationState end,
-        FruitStorageActivation = function() return AutomatedFruitStorageActivationState end
-    },
-    PlayerReferencesContainer = {
-        LocalPlayerInstance = LocalPlayerReference,
-        CharacterInstance = function() return LocalPlayerReference.Character end,
-        PlayerLevelValue = function() return tonumber(PlayerLevelDisplayElementReference.Text) or 1 end
-    },
-    RemoteConnectionsContainer = {
-        DialogueEventReference = DialogueSystemRemoteEventHandlerReference,
-        QuestEventReference = QuestManagementRemoteEventHandlerReference
-    }
-}
-
-PrimaryDashboardWindowInstance:SelectTab(1)
+            task.cancel(Automated
