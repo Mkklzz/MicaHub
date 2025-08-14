@@ -7,7 +7,7 @@ local ReplicatedStorageServiceReference, PlayersServiceReference, LocalPlayerRef
 repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
 
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
-local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState, TweenServiceSpeedValue, CodesRedeemedExecutedState = false, false, false, false, false, false, false, false, false, false, false, 5, false
+local AutomatedQuestFarmingActivationState, AutomatedEnemyFarmingActivationState, AutomatedBossFarmingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState, TweenServiceSpeedValue, CodesRedeemedExecutedState = false, false, false, false, false, false, false, false, false, false, false, false, 5, false
 local CurrentCharacterInstanceReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
 local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
 
@@ -37,19 +37,24 @@ local FluentLibraryInterfaceContainer = loadstring(game:HttpGet("https://github.
 local PrimaryDashboardWindowInstance = FluentLibraryInterfaceContainer:CreateWindow({Title = "MicaHub", SubTitle = "Vox Seas", TabWidth = 160, Size = UDim2.fromOffset(550, 330), Acrylic = false, Theme = "Dark", MinimizeKey = Enum.KeyCode.LeftControl})
 PrimaryDashboardWindowInstance:Minimize()
 
-local AuthorTabContainerReference, HomeTabContainerReference, StatusTabContainerReference, OthersTabContainerReference, SettingsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Author", Icon = "user" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Home", Icon = "home" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Status", Icon = "trending-up" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Others", Icon = "layers" }), PrimaryDashboardWindowInstance:AddTab({ Title = "Settings", Icon = "settings" })
+local WelcomeTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Welcome", Icon = "heart" })
+local FarmingTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Farming", Icon = "swords" })
+local StatusTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Status", Icon = "trending-up" })
+local FruitsRaidsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Fruits/Raids", Icon = "apple" })
+local OthersTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Others", Icon = "layers" })
+local SettingsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Settings", Icon = "settings" })
 
-AuthorTabContainerReference:AddSection("Author Information")
-AuthorTabContainerReference:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
-AuthorTabContainerReference:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
-AuthorTabContainerReference:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
+WelcomeTabContainerReference:AddSection("Author Information")
+WelcomeTabContainerReference:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
+WelcomeTabContainerReference:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
+WelcomeTabContainerReference:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
     PrimaryDashboardWindowInstance:Dialog({Title = "Discord link copied", Content = "The Discord link has been copied to your clipboard. You can now paste it in your browser to join the server.", Buttons = {
         {Title = "Ok", Callback = function() end}
     }})
     setclipboard("https://discord.gg/yfsKgGYU4e")
 end})
 
-HomeTabContainerReference:AddSection("Automatic Functions")
+FarmingTabContainerReference:AddSection("Farming Functions")
 
 local function ProcessSingleFruit()
     for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
@@ -112,7 +117,7 @@ local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     return ExecuteAutomatedQuestFarmingProcedureRoutine()
 end
 
-local AutomatedQuestFarmingToggleControlReference = HomeTabContainerReference:AddToggle("AutomatedQuestFarming", {Title = "Auto Farm Quests", Default = false })
+local AutomatedQuestFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedQuestFarming", {Title = "Auto Farm Quests [BETA]", Default = false })
 AutomatedQuestFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
     AutomatedQuestFarmingActivationState = ToggleActivationStateValue 
     if AutomatedQuestFarmingActivationState then 
@@ -127,8 +132,17 @@ AutomatedQuestFarmingToggleControlReference:OnChanged(function(ToggleActivationS
     end
 end)
 
-local AutomatedMobBringingToggleControlReference = HomeTabContainerReference:AddToggle("AutomatedMobBringing", {Title = "Auto Bring Mobs [BETA]", Default = false })
-AutomatedMobBringingToggleControlReference:OnChanged(function(ToggleActivationStateValue) AutomatedMobBringingActivationState = ToggleActivationStateValue end)
+local AutomatedEnemyFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedEnemyFarming", {Title = "Auto Farm Enemies", Default = false })
+AutomatedEnemyFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) AutomatedEnemyFarmingActivationState = ToggleActivationStateValue end)
+
+FarmingTabContainerReference:AddSection("Farming Boss")
+
+local BossFarmSelectionDropdownReference = FarmingTabContainerReference:AddDropdown("BossFarmSelection", {Title = "Select Boss Farm", Values = {"AINDA NÃO TERMINEI"}, Multi = false, Default = 1})
+
+local AutomatedBossFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedBossFarming", {Title = "Auto Farm Boss", Default = false })
+AutomatedBossFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) AutomatedBossFarmingActivationState = ToggleActivationStateValue end)
+
+FarmingTabContainerReference:AddSection("Other Functions")
 
 local function ExecuteTouchInterestForGameChestsCollection(PlayerCharacterInstanceReference)
     local ChestContainerPathReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
@@ -141,34 +155,29 @@ local function ExecuteTouchInterestForGameChestsCollection(PlayerCharacterInstan
     end
 end
 
-local function ExecuteTouchInterestForDroppedFruitsCollection(PlayerCharacterInstanceReference, DroppedToolObjectInstance)
-    if not PlayerCharacterInstanceReference or not PlayerCharacterInstanceReference:FindFirstChild("HumanoidRootPart") or not DroppedToolObjectInstance:IsA("Tool") or not DroppedToolObjectInstance:FindFirstChild("Handle") then return end
-    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 0) 
-    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 1)
-end
-
-HomeTabContainerReference:AddButton({Title = "Take All Chests", Description = "Collect Chests Immediately", Callback = function() ExecuteTouchInterestForGameChestsCollection(LocalPlayerReference.Character) end})
-HomeTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
+FarmingTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
     if CodesRedeemedExecutedState then
         PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "All codes have already been redeemed! This function can only be used once per session to prevent spam.", Buttons = {
             {Title = "Ok", Callback = function() end}
         }})
         return
     end
-    PrimaryDashboardWindowInstance:Dialog({Title = "Redeem All Codes", Content = "Are you sure you want to redeem all available codes?", Buttons = {
-        {Title = "Confirm", Callback = function()
-            for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
-                pcall(function() 
-                    ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifierString) 
-                end)
-            end
-            CodesRedeemedExecutedState = true
-        end},
-        {Title = "Cancel", Callback = function() end}
-    }})
+    for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
+        pcall(function() 
+            ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifierString) 
+        end)
+    end
+    CodesRedeemedExecutedState = true
 end})
 
-HomeTabContainerReference:AddSection("Basic Settings")
+FarmingTabContainerReference:AddButton({Title = "Take All Chests", Description = "Collect Chests Immediately", Callback = function() ExecuteTouchInterestForGameChestsCollection(LocalPlayerReference.Character) end})
+
+FarmingTabContainerReference:AddSection("Basic Settings")
+
+local IncludeBossFarmToggleControlReference = FarmingTabContainerReference:AddToggle("IncludeBossFarm", {Title = "Include Boss Farm", Description = "Enable boss farming integration with other farming functions", Default = false})
+IncludeBossFarmToggleControlReference:OnChanged(function(ToggleActivationStateValue)
+    IncludeBossFarmActivationState = ToggleActivationStateValue
+end)
 
 local function IsToolInAvailableList(ToolNameParameter)
     for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
@@ -179,7 +188,7 @@ local function IsToolInAvailableList(ToolNameParameter)
     return false
 end
 
-HomeTabContainerReference:AddButton({Title = "Remove Waiting Time", Description = "Now the tools don't have any more Cooldown set! Your attacks will now be powerful.", Callback = function()
+FarmingTabContainerReference:AddButton({Title = "Remove Waiting Time", Description = "Now the tools don't have any more Cooldown set! Your attacks will now be powerful.", Callback = function()
     if CooldownRemovalExecutedState then
         PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cooldown removal has already been executed! This function can only be used once per session to prevent conflicts.", Buttons = {
             {Title = "Ok", Callback = function() end}
@@ -242,9 +251,15 @@ for StatusName, _ in pairs(StatusUpgradeRoutinesContainer) do
     CreateStatusUpgradeToggleConfiguration(StatusName)
 end
 
-OthersTabContainerReference:AddSection("Fruits Functionality")
+FruitsRaidsTabContainerReference:AddSection("Fruits Functionality")
 
 local DroppedToolsWorkspaceContainerReference = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
+
+local function ExecuteTouchInterestForDroppedFruitsCollection(PlayerCharacterInstanceReference, DroppedToolObjectInstance)
+    if not PlayerCharacterInstanceReference or not PlayerCharacterInstanceReference:FindFirstChild("HumanoidRootPart") or not DroppedToolObjectInstance:IsA("Tool") or not DroppedToolObjectInstance:FindFirstChild("Handle") then return end
+    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 0) 
+    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 1)
+end
 
 local function ExecuteAutomatedFruitCollectionProcedureRoutine()
     if not AutomatedFruitCollectionActivationState then return end
@@ -259,7 +274,7 @@ local function ExecuteAutomatedFruitCollectionProcedureRoutine()
     return ExecuteAutomatedFruitCollectionProcedureRoutine()
 end
 
-local AutomatedFruitCollectionToggleControlReference = OthersTabContainerReference:AddToggle("AutomatedFruitCollection", {Title = "Auto Collect Fruits", Default = false })
+local AutomatedFruitCollectionToggleControlReference = FruitsRaidsTabContainerReference:AddToggle("AutomatedFruitCollection", {Title = "Auto Collect Fruits", Default = false })
 AutomatedFruitCollectionToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
     AutomatedFruitCollectionActivationState = ToggleActivationStateValue 
     if AutomatedFruitCollectionActivationState then 
@@ -281,7 +296,7 @@ local function ExecuteAutomatedFruitStorageProcedureRoutine()
     return ExecuteAutomatedFruitStorageProcedureRoutine()
 end
 
-local AutomatedFruitStorageToggleControlReference = OthersTabContainerReference:AddToggle("AutomatedFruitStorage", {Title = "Auto Store Fruits", Default = false })
+local AutomatedFruitStorageToggleControlReference = FruitsRaidsTabContainerReference:AddToggle("AutomatedFruitStorage", {Title = "Auto Store Fruits", Default = false })
 AutomatedFruitStorageToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
     AutomatedFruitStorageActivationState = ToggleActivationStateValue 
     if AutomatedFruitStorageActivationState then 
@@ -314,8 +329,8 @@ end
 local TeleportationDestinationSelectionDropdownReference = OthersTabContainerReference:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocationsContainer(), Multi = false, Default = 1})
 
 OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
-    if AutomatedQuestFarmingActivationState or AutomatedMobBringingActivationState then
-        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm Quests and Auto Bring Mobs before teleporting.", Buttons = {
+    if AutomatedQuestFarmingActivationState or AutomatedEnemyFarmingActivationState then
+        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm functions before teleporting.", Buttons = {
             {Title = "Ok", Callback = function() end}
         }})
         return
@@ -348,22 +363,11 @@ OthersTabContainerReference:AddButton({Title = "Join the Server", Description = 
     }})
 end})
 
-SettingsTabContainerReference:AddSection("Farming Settings")
-
-local IncludeBossFarmToggleControlReference = SettingsTabContainerReference:AddToggle("IncludeBossFarm", {Title = "Include Boss Farm", Description = "Now the farm will include boss farming...", Default = false})
-IncludeBossFarmToggleControlReference:OnChanged(function(ToggleActivationStateValue)
-    IncludeBossFarmActivationState = ToggleActivationStateValue
-end)
-
-local TweenServiceSpeedSliderControlReference = SettingsTabContainerReference:AddSlider("TweenServiceSpeed", {Title = "TweenService Speed", Min = 1, Max = 10, Default = 5, Rounding = 0})
-TweenServiceSpeedSliderControlReference:OnChanged(function(SliderValue)
-    TweenServiceSpeedValue = SliderValue
-end)
-
 getgenv().MicaHubMainInterfaceContainer = {
     ToggleStatesContainer = {
         QuestFarmingActivation = function() return AutomatedQuestFarmingActivationState end,
-        MobBringingActivation = function() return AutomatedMobBringingActivationState end,
+        EnemyFarmingActivation = function() return AutomatedEnemyFarmingActivationState end,
+        BossFarmingActivation = function() return AutomatedBossFarmingActivationState end,
         FruitCollectionActivation = function() return AutomatedFruitCollectionActivationState end,
         FruitStorageActivation = function() return AutomatedFruitStorageActivationState end
     },
