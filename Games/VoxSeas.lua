@@ -31,9 +31,8 @@ task.spawn(function()
     MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://14513659000", true, 1
     MobileButtonCornerRadiusElement.CornerRadius, MobileButtonCornerRadiusElement.Parent = UDim.new(0,200), MobileToggleButtonElement
     MobileToggleButtonElement.MouseButton1Click:Connect(function() 
-        local UserInputService = game:GetService("UserInputService")
-        UserInputService:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
-        UserInputService:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+        keypress(Enum.KeyCode.LeftControl)
+        keyrelease(Enum.KeyCode.LeftControl)
     end)
 end)
 
