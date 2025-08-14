@@ -7,9 +7,10 @@ local ReplicatedStorageServiceReference, PlayersServiceReference, LocalPlayerRef
 repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
 
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
-local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState = false, false, false, false, false, false, false, false, false, false
+local AutomatedQuestFarmingActivationState, AutomatedMobBringingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState = false, false, false, false, false, false, false, false, false, false, false
 local CurrentCharacterInstanceReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
 local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
+local TweenServiceSpeedValue = 5
 
 LocalPlayerReference.CharacterAdded:Connect(function(NewlySpawnedCharacterInstance) CurrentCharacterInstanceReference = NewlySpawnedCharacterInstance end)
 
@@ -28,12 +29,9 @@ task.spawn(function()
     getgenv().LoadedMobileUserInterfaceContainer = true
     local MobileUIScreenGuiContainer, MobileToggleButtonElement, MobileButtonCornerRadiusElement = Instance.new("ScreenGui"), Instance.new("ImageButton"), Instance.new("UICorner")
     MobileUIScreenGuiContainer.Name, MobileUIScreenGuiContainer.Parent, MobileUIScreenGuiContainer.ZIndexBehavior = "MobileUIScreenGui", game:GetService("CoreGui"), Enum.ZIndexBehavior.Sibling
-    MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://14513659000", true, 1
+    MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://15330857581", true, 1
     MobileButtonCornerRadiusElement.CornerRadius, MobileButtonCornerRadiusElement.Parent = UDim.new(0,200), MobileToggleButtonElement
-    MobileToggleButtonElement.MouseButton1Click:Connect(function() 
-        keypress(Enum.KeyCode.LeftControl)
-        keyrelease(Enum.KeyCode.LeftControl)
-    end)
+    MobileToggleButtonElement.MouseButton1Click:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game) end)
 end)
 
 local FluentLibraryInterfaceContainer = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
