@@ -3,11 +3,17 @@ if game.PlaceId ~= 104067066727140 then
     return 
 end
 
+repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game:GetService("Players").LocalPlayer
+repeat task.wait() until game:GetService("Players").LocalPlayer.Character
+repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
+
 local ReplicatedStorageServiceReference, PlayersServiceReference, LocalPlayerReference, RunServiceReference, TweenServiceReference = game:GetService("ReplicatedStorage"), game:GetService("Players"), game:GetService("Players").LocalPlayer, game:GetService("RunService"), game:GetService("TweenService")
-repeat RunServiceReference.Heartbeat:wait() until LocalPlayerReference.Character
+repeat RunServiceReference.Heartbeat:Wait() until LocalPlayerReference.Character
 
 local GameFrameworkModuleContainer, MainModulesContainer = ReplicatedStorageServiceReference:WaitForChild("Framework"), ReplicatedStorageServiceReference:WaitForChild("MainModules")
-local AutomatedQuestFarmingActivationState, AutomatedEnemyFarmingActivationState, AutomatedBossFarmingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, AutomatedDefenseStatusUpgradeActivationState, AutomatedSwordStatusUpgradeActivationState, AutomatedGunStatusUpgradeActivationState, AutomatedStrengthStatusUpgradeActivationState, AutomatedDevilFruitStatusUpgradeActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState, TweenServiceSpeedValue, CodesRedeemedExecutedState = false, false, false, false, false, false, false, false, false, false, false, false, 5, false
+local AutomatedQuestFarmingActivationState, AutomatedEnemyFarmingActivationState, AutomatedBossFarmingActivationState, AutomatedMaterialFarmingActivationState, AutomatedFruitCollectionActivationState, AutomatedFruitStorageActivationState, CooldownRemovalExecutedState, IncludeBossFarmActivationState, CodesRedeemedExecutedState, CurrentMinimizeKeyCode, WalkingWaterActivationState, StatusPointsAmount = false, false, false, false, false, false, false, false, false, "LeftControl", false, 3
+local AutomatedStatusUpgradeStates = {Defense = false, Sword = false, Gun = false, Strength = false, DevilFruit = false}
 local CurrentCharacterInstanceReference = LocalPlayerReference.Character or LocalPlayerReference.CharacterAdded:Wait()
 local AvailableToolsListContainer = {"BlackLeg", "Combat", "Eletric", "WaterKungFu"}
 
@@ -30,54 +36,65 @@ task.spawn(function()
     MobileUIScreenGuiContainer.Name, MobileUIScreenGuiContainer.Parent, MobileUIScreenGuiContainer.ZIndexBehavior = "MobileUIScreenGui", game:GetService("CoreGui"), Enum.ZIndexBehavior.Sibling
     MobileToggleButtonElement.Parent, MobileToggleButtonElement.BackgroundColor3, MobileToggleButtonElement.BackgroundTransparency, MobileToggleButtonElement.Position, MobileToggleButtonElement.Size, MobileToggleButtonElement.Image, MobileToggleButtonElement.Draggable, MobileToggleButtonElement.Transparency = MobileUIScreenGuiContainer, Color3.fromRGB(105,105,105), 0.8, UDim2.new(0.9,0,0.1,0), UDim2.new(0,50,0,50), "rbxassetid://15330857581", true, 1
     MobileButtonCornerRadiusElement.CornerRadius, MobileButtonCornerRadiusElement.Parent = UDim.new(0,200), MobileToggleButtonElement
-    MobileToggleButtonElement.MouseButton1Click:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(true,"LeftControl",false,game) end)
+    MobileToggleButtonElement.MouseButton1Click:Connect(function() 
+        local KeyCodeEnum = Enum.KeyCode[CurrentMinimizeKeyCode] or Enum.KeyCode.LeftControl
+        game:GetService("VirtualInputManager"):SendKeyEvent(true, KeyCodeEnum, false, game) 
+    end)
 end)
 
 local FluentLibraryInterfaceContainer = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local PrimaryDashboardWindowInstance = FluentLibraryInterfaceContainer:CreateWindow({Title = "MicaHub", SubTitle = "Vox Seas", TabWidth = 160, Size = UDim2.fromOffset(550, 330), Acrylic = false, Theme = "Dark", MinimizeKey = Enum.KeyCode.LeftControl})
 PrimaryDashboardWindowInstance:Minimize()
 
-local WelcomeTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Welcome", Icon = "heart" })
+local InformationTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Information", Icon = "info" })
 local FarmingTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Farming", Icon = "swords" })
-local StatusTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Status", Icon = "trending-up" })
-local FruitsRaidsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Fruits/Raids", Icon = "apple" })
-local OthersTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Others", Icon = "layers" })
+local StatusTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Status", Icon = "bar-chart" })
+local ShopTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Shop", Icon = "shopping-cart" })
+local FruitsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Fruits", Icon = "apple" })
+local TeleportTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Teleport", Icon = "map-pin" })
+local MiscTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Misc", Icon = "folder" })
 local SettingsTabContainerReference = PrimaryDashboardWindowInstance:AddTab({ Title = "Settings", Icon = "settings" })
 
-WelcomeTabContainerReference:AddSection("Author Information")
-WelcomeTabContainerReference:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
-WelcomeTabContainerReference:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
-WelcomeTabContainerReference:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
+InformationTabContainerReference:AddSection("Author Information")
+InformationTabContainerReference:AddParagraph({Title = "Thank you for using my Dashboard!", Content = "I'm still developing, some functions may be incomplete or bugs!"})
+InformationTabContainerReference:AddParagraph({Title = "GitHub: Mkklzz", Content = ""})
+InformationTabContainerReference:AddButton({Title = "Join Discord Server", Description = "Join the author's discord. To receive information or updates", Callback = function()
     PrimaryDashboardWindowInstance:Dialog({Title = "Discord link copied", Content = "The Discord link has been copied to your clipboard. You can now paste it in your browser to join the server.", Buttons = {
         {Title = "Ok", Callback = function() end}
     }})
     setclipboard("https://discord.gg/yfsKgGYU4e")
 end})
 
-FarmingTabContainerReference:AddSection("Farming Functions")
-
 local function ProcessSingleFruit()
+    local SelectedFruitReference = nil
     for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
         for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
-            if IndividualToolObjectInstance:IsA("Tool") and IndividualToolObjectInstance.Name:match("Fruit$") then
-                if IndividualToolObjectInstance.Parent == LocalPlayerReference.Backpack then
-                    LocalPlayerReference.Character.Humanoid:EquipTool(IndividualToolObjectInstance)
-                    RunServiceReference.Heartbeat:wait()
-                end
-                local FruitReference = IndividualToolObjectInstance
-                pcall(function() 
-                    ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") 
-                end)
-                RunServiceReference.Heartbeat:wait()
-                RunServiceReference.Heartbeat:wait()
-                if FruitReference and FruitReference.Parent then
-                    pcall(function() FruitReference:Destroy() end)
-                end
-                return true
+            if IndividualToolObjectInstance:IsA("Tool") and IndividualToolObjectInstance.Name:find("Fruit") then
+                SelectedFruitReference = IndividualToolObjectInstance
+                break
             end
         end
+        if SelectedFruitReference then break end
     end
-    return false
+    if not SelectedFruitReference then return false end
+    if SelectedFruitReference.Parent == LocalPlayerReference.Backpack then
+        LocalPlayerReference.Character.Humanoid:EquipTool(SelectedFruitReference)
+        RunServiceReference.Heartbeat:Wait()
+    end
+    pcall(function() 
+        ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") 
+    end)
+    RunServiceReference.Heartbeat:Wait()
+    RunServiceReference.Heartbeat:Wait()
+    pcall(function() 
+        ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ToolsEvent"):FireServer("StoreFruit") 
+    end)
+    RunServiceReference.Heartbeat:Wait()
+    RunServiceReference.Heartbeat:Wait()
+    if SelectedFruitReference and SelectedFruitReference.Parent then
+        pcall(function() SelectedFruitReference:Destroy() end)
+    end
+    return true
 end
 
 local function GetAvailableTool()
@@ -85,7 +102,6 @@ local function GetAvailableTool()
         local ToolReference = LocalPlayerReference.Backpack:FindFirstChild(ToolNameIdentifier) or LocalPlayerReference.Character:FindFirstChild(ToolNameIdentifier)
         if ToolReference then return ToolReference end
     end
-    
     for _, ToolContainerObjectReference in pairs({LocalPlayerReference.Backpack, LocalPlayerReference.Character}) do
         for _, IndividualToolObjectInstance in pairs(ToolContainerObjectReference:GetChildren()) do
             if IndividualToolObjectInstance:IsA("Tool") then
@@ -100,11 +116,25 @@ local function GetAvailableTool()
     return nil
 end
 
+local function ExecuteTouchInterestForItems(PlayerCharacterInstanceReference, ItemInstanceReference)
+    if not PlayerCharacterInstanceReference or not PlayerCharacterInstanceReference:FindFirstChild("HumanoidRootPart") then return end
+    local HandleReference = ItemInstanceReference:IsA("Tool") and ItemInstanceReference:FindFirstChild("Handle") or (ItemInstanceReference:IsA("BasePart") and ItemInstanceReference)
+    if HandleReference then
+        firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, HandleReference, 0) 
+        firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, HandleReference, 1)
+    end
+end
+
 local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     if not AutomatedQuestFarmingActivationState then return end
     if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
-        RunServiceReference.Heartbeat:wait() 
+        RunServiceReference.Heartbeat:Wait() 
         return ExecuteAutomatedQuestFarmingProcedureRoutine() 
+    end
+    RunServiceReference.Heartbeat:Wait()
+    RunServiceReference.Heartbeat:Wait()
+    if getgenv().MicaHubQuestSystemContainer and getgenv().MicaHubQuestSystemContainer.StartQuestManagement then
+        getgenv().MicaHubQuestSystemContainer.StartQuestManagement()
     end
     if ProcessSingleFruit() then
         return ExecuteAutomatedQuestFarmingProcedureRoutine()
@@ -113,9 +143,75 @@ local function ExecuteAutomatedQuestFarmingProcedureRoutine()
     if EquippedToolObjectReference and EquippedToolObjectReference:IsA("Tool") and EquippedToolObjectReference.Parent == LocalPlayerReference.Backpack then 
         LocalPlayerReference.Character.Humanoid:EquipTool(EquippedToolObjectReference) 
     end
-    RunServiceReference.Heartbeat:wait()
+    RunServiceReference.Heartbeat:Wait()
     return ExecuteAutomatedQuestFarmingProcedureRoutine()
 end
+
+local function ExecuteAutomatedFruitCollectionProcedureRoutine()
+    if not AutomatedFruitCollectionActivationState then return end
+    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
+        RunServiceReference.Heartbeat:Wait() 
+        return ExecuteAutomatedFruitCollectionProcedureRoutine() 
+    end
+    local DroppedToolsWorkspaceContainerReference = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
+    for _, IndividualDroppedToolObjectInstance in pairs(DroppedToolsWorkspaceContainerReference:GetChildren()) do 
+        ExecuteTouchInterestForItems(LocalPlayerReference.Character, IndividualDroppedToolObjectInstance) 
+    end
+    RunServiceReference.Heartbeat:Wait() 
+    return ExecuteAutomatedFruitCollectionProcedureRoutine()
+end
+
+local function ExecuteAutomatedFruitStorageProcedureRoutine()
+    if not AutomatedFruitStorageActivationState then return end
+    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
+        RunServiceReference.Heartbeat:Wait()
+        return ExecuteAutomatedFruitStorageProcedureRoutine() 
+    end
+    if ProcessSingleFruit() then
+        RunServiceReference.Heartbeat:Wait()
+        RunServiceReference.Heartbeat:Wait()
+        RunServiceReference.Heartbeat:Wait()
+        return ExecuteAutomatedFruitStorageProcedureRoutine()
+    end
+    RunServiceReference.Heartbeat:Wait()
+    return ExecuteAutomatedFruitStorageProcedureRoutine()
+end
+
+local function ExecuteTouchInterestForGameChestsCollection(PlayerCharacterInstanceReference)
+    local ChestContainerPathReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
+    if not ChestContainerPathReference then return end
+    for _, IndividualChestPartInstance in pairs(ChestContainerPathReference:GetChildren()) do
+        if IndividualChestPartInstance:IsA("BasePart") then 
+            ExecuteTouchInterestForItems(PlayerCharacterInstanceReference, IndividualChestPartInstance)
+        end
+    end
+end
+
+local function CreateAutomatedStatusUpgradeProcedureRoutine(StatusTypeValidationFunction, StatusUpgradeTableConfiguration)
+    return function()
+        if not StatusTypeValidationFunction() then return end
+        pcall(function() 
+            local UpgradeConfiguration = {}
+            for StatusType, BaseValue in pairs(StatusUpgradeTableConfiguration) do
+                UpgradeConfiguration[StatusType] = BaseValue * StatusPointsAmount
+            end
+            ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer("UpgradeStat", UpgradeConfiguration) 
+        end)
+        RunServiceReference.Heartbeat:Wait() 
+        return CreateAutomatedStatusUpgradeProcedureRoutine(StatusTypeValidationFunction, StatusUpgradeTableConfiguration)()
+    end
+end
+
+local function IsToolInAvailableList(ToolNameParameter)
+    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
+        if ToolNameParameter == ToolNameIdentifier or ToolNameParameter:find(ToolNameIdentifier) then
+            return true
+        end
+    end
+    return false
+end
+
+FarmingTabContainerReference:AddSection("Farming Functions")
 
 local AutomatedQuestFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedQuestFarming", {Title = "Auto Farm Quests [BETA]", Default = false })
 AutomatedQuestFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
@@ -139,30 +235,23 @@ FarmingTabContainerReference:AddSection("Farming Boss")
 
 local BossFarmSelectionDropdownReference = FarmingTabContainerReference:AddDropdown("BossFarmSelection", {Title = "Select Boss Farm", Values = {"AINDA NÃO TERMINEI"}, Multi = false, Default = 1})
 
+FarmingTabContainerReference:AddParagraph({Title = "Selected Boss Spawning: 🔴", Content = ""})
+
 local AutomatedBossFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedBossFarming", {Title = "Auto Farm Boss", Default = false })
 AutomatedBossFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) AutomatedBossFarmingActivationState = ToggleActivationStateValue end)
 
+FarmingTabContainerReference:AddSection("Farming Material")
+
+local MaterialFarmSelectionDropdownReference = FarmingTabContainerReference:AddDropdown("MaterialFarmSelection", {Title = "Select Material", Values = {"AINDA NÃO TERMINEI"}, Multi = false, Default = 1})
+
+local AutomatedMaterialFarmingToggleControlReference = FarmingTabContainerReference:AddToggle("AutomatedMaterialFarming", {Title = "Farming Selected Material", Default = false })
+AutomatedMaterialFarmingToggleControlReference:OnChanged(function(ToggleActivationStateValue) AutomatedMaterialFarmingActivationState = ToggleActivationStateValue end)
+
 FarmingTabContainerReference:AddSection("Other Functions")
 
-local function ExecuteTouchInterestForGameChestsCollection(PlayerCharacterInstanceReference)
-    local ChestContainerPathReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Int") and workspace.IgnoreList.Int:FindFirstChild("Chests")
-    if not ChestContainerPathReference or not PlayerCharacterInstanceReference or not PlayerCharacterInstanceReference:FindFirstChild("HumanoidRootPart") then return end
-    for _, IndividualChestPartInstance in pairs(ChestContainerPathReference:GetChildren()) do
-        if IndividualChestPartInstance:IsA("BasePart") then 
-            firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, IndividualChestPartInstance, 0) 
-            firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, IndividualChestPartInstance, 1) 
-        end
-    end
-end
-
 FarmingTabContainerReference:AddButton({Title = "Redeem All Codes", Description = "Redeem all available codes in the game!", Callback = function()
-    if CodesRedeemedExecutedState then
-        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "All codes have already been redeemed! This function can only be used once per session to prevent spam.", Buttons = {
-            {Title = "Ok", Callback = function() end}
-        }})
-        return
-    end
-    for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "Release"}) do
+    if CodesRedeemedExecutedState then return end
+    for _, IndividualCodeIdentifierString in pairs({"BugFix1", "BugFix2", "BugFix3", "BugFix4"}) do
         pcall(function() 
             ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CodesEvent"):FireServer("Redeem", IndividualCodeIdentifierString) 
         end)
@@ -179,22 +268,13 @@ IncludeBossFarmToggleControlReference:OnChanged(function(ToggleActivationStateVa
     IncludeBossFarmActivationState = ToggleActivationStateValue
 end)
 
-local function IsToolInAvailableList(ToolNameParameter)
-    for _, ToolNameIdentifier in pairs(AvailableToolsListContainer) do
-        if ToolNameParameter == ToolNameIdentifier or ToolNameParameter:find(ToolNameIdentifier) then
-            return true
-        end
-    end
-    return false
-end
+local WalkingWaterToggleControlReference = FarmingTabContainerReference:AddToggle("WalkingWater", {Title = "Walking Water", Description = "Allows you to walk on water surfaces without swimming", Default = false})
+WalkingWaterToggleControlReference:OnChanged(function(ToggleActivationStateValue)
+    WalkingWaterActivationState = ToggleActivationStateValue
+end)
 
 FarmingTabContainerReference:AddButton({Title = "Remove Waiting Time", Description = "Now the tools don't have any more Cooldown set! Your attacks will now be powerful.", Callback = function()
-    if CooldownRemovalExecutedState then
-        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cooldown removal has already been executed! This function can only be used once per session to prevent conflicts.", Buttons = {
-            {Title = "Ok", Callback = function() end}
-        }})
-        return
-    end
+    if CooldownRemovalExecutedState then return end
     pcall(function()
         local MainModulesContainer = require(ReplicatedStorageServiceReference.MainModules)
         local OriginalIsCooldownFunction = MainModulesContainer.CombatHandler.IsCooldown
@@ -210,176 +290,12 @@ end})
 
 StatusTabContainerReference:AddSection("Automatic Status")
 
-local function CreateAutomatedStatusUpgradeProcedureRoutine(StatusTypeValidationFunction, StatusUpgradeTableConfiguration)
-    return function()
-        if not StatusTypeValidationFunction() then return end
-        pcall(function() 
-            ReplicatedStorageServiceReference:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("StatsEvent"):FireServer("UpgradeStat", StatusUpgradeTableConfiguration) 
-        end)
-        RunServiceReference.Heartbeat:wait() 
-        return CreateAutomatedStatusUpgradeProcedureRoutine(StatusTypeValidationFunction, StatusUpgradeTableConfiguration)()
-    end
-end
+local StatusPointsSliderControlReference = StatusTabContainerReference:AddSlider("StatusPoints", {Title = "Status Points Amount", Min = 3, Max = 10, Default = 3, Rounding = 0})
+StatusPointsSliderControlReference:OnChanged(function(SliderValue)
+    StatusPointsAmount = SliderValue
+end)
 
 local StatusUpgradeRoutinesContainer = {
-    Defense = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedDefenseStatusUpgradeActivationState end, {Defense = 1, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 0}),
-    Sword = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedSwordStatusUpgradeActivationState end, {Defense = 0, Sword = 1, Gun = 0, Strength = 0, DevilFruit = 0}),
-    Gun = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedGunStatusUpgradeActivationState end, {Defense = 0, Sword = 0, Gun = 1, Strength = 0, DevilFruit = 0}),
-    Strength = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedStrengthStatusUpgradeActivationState end, {Defense = 0, Sword = 0, Gun = 0, Strength = 1, DevilFruit = 0}),
-    DevilFruit = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedDevilFruitStatusUpgradeActivationState end, {Defense = 0, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 1})
-}
-
-local StatusActivationStates = {
-    Defense = function(value) AutomatedDefenseStatusUpgradeActivationState = value end,
-    Sword = function(value) AutomatedSwordStatusUpgradeActivationState = value end,
-    Gun = function(value) AutomatedGunStatusUpgradeActivationState = value end,
-    Strength = function(value) AutomatedStrengthStatusUpgradeActivationState = value end,
-    DevilFruit = function(value) AutomatedDevilFruitStatusUpgradeActivationState = value end
-}
-
-local function CreateStatusUpgradeToggleConfiguration(StatusNameIdentifier)
-    local ToggleControlReference = StatusTabContainerReference:AddToggle("Automated" .. StatusNameIdentifier .. "StatusUpgrade", {Title = "Auto Status " .. StatusNameIdentifier, Default = false})
-    ToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
-        StatusActivationStates[StatusNameIdentifier](ToggleActivationStateValue)
-        if ToggleActivationStateValue then 
-            task.spawn(StatusUpgradeRoutinesContainer[StatusNameIdentifier]) 
-        end 
-    end)
-end
-
-for StatusName, _ in pairs(StatusUpgradeRoutinesContainer) do
-    CreateStatusUpgradeToggleConfiguration(StatusName)
-end
-
-FruitsRaidsTabContainerReference:AddSection("Fruits Functionality")
-
-local DroppedToolsWorkspaceContainerReference = workspace:WaitForChild("Playability"):WaitForChild("DroppedTools")
-
-local function ExecuteTouchInterestForDroppedFruitsCollection(PlayerCharacterInstanceReference, DroppedToolObjectInstance)
-    if not PlayerCharacterInstanceReference or not PlayerCharacterInstanceReference:FindFirstChild("HumanoidRootPart") or not DroppedToolObjectInstance:IsA("Tool") or not DroppedToolObjectInstance:FindFirstChild("Handle") then return end
-    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 0) 
-    firetouchinterest(PlayerCharacterInstanceReference.HumanoidRootPart, DroppedToolObjectInstance.Handle, 1)
-end
-
-local function ExecuteAutomatedFruitCollectionProcedureRoutine()
-    if not AutomatedFruitCollectionActivationState then return end
-    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
-        RunServiceReference.Heartbeat:wait() 
-        return ExecuteAutomatedFruitCollectionProcedureRoutine() 
-    end
-    for _, IndividualDroppedToolObjectInstance in pairs(DroppedToolsWorkspaceContainerReference:GetChildren()) do 
-        ExecuteTouchInterestForDroppedFruitsCollection(LocalPlayerReference.Character, IndividualDroppedToolObjectInstance) 
-    end
-    RunServiceReference.Heartbeat:wait() 
-    return ExecuteAutomatedFruitCollectionProcedureRoutine()
-end
-
-local AutomatedFruitCollectionToggleControlReference = FruitsRaidsTabContainerReference:AddToggle("AutomatedFruitCollection", {Title = "Auto Collect Fruits", Default = false })
-AutomatedFruitCollectionToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
-    AutomatedFruitCollectionActivationState = ToggleActivationStateValue 
-    if AutomatedFruitCollectionActivationState then 
-        task.spawn(ExecuteAutomatedFruitCollectionProcedureRoutine) 
-    end 
-end)
-
-local AutomatedFruitStorageCoroutineReference
-local function ExecuteAutomatedFruitStorageProcedureRoutine()
-    if not AutomatedFruitStorageActivationState then return end
-    if not LocalPlayerReference.Character or not LocalPlayerReference.Character:FindFirstChild("HumanoidRootPart") then 
-        RunServiceReference.Heartbeat:wait()
-        return ExecuteAutomatedFruitStorageProcedureRoutine() 
-    end
-    if ProcessSingleFruit() then
-        return ExecuteAutomatedFruitStorageProcedureRoutine()
-    end
-    RunServiceReference.Heartbeat:wait()
-    return ExecuteAutomatedFruitStorageProcedureRoutine()
-end
-
-local AutomatedFruitStorageToggleControlReference = FruitsRaidsTabContainerReference:AddToggle("AutomatedFruitStorage", {Title = "Auto Store Fruits", Default = false })
-AutomatedFruitStorageToggleControlReference:OnChanged(function(ToggleActivationStateValue) 
-    AutomatedFruitStorageActivationState = ToggleActivationStateValue 
-    if AutomatedFruitStorageActivationState then 
-        if AutomatedFruitStorageCoroutineReference then
-            task.cancel(AutomatedFruitStorageCoroutineReference)
-        end
-        AutomatedFruitStorageCoroutineReference = task.spawn(ExecuteAutomatedFruitStorageProcedureRoutine)
-    else
-        if AutomatedFruitStorageCoroutineReference then
-            task.cancel(AutomatedFruitStorageCoroutineReference)
-            AutomatedFruitStorageCoroutineReference = nil
-        end
-    end
-end)
-
-OthersTabContainerReference:AddSection("Teleporting World")
-
-local function RetrieveAvailablePortalLocationsContainer()
-    local PortalContainerFolderReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
-    if not PortalContainerFolderReference then return {} end
-    local AvailableLocationsListContainer = {}
-    for _, IndividualPortalPartInstance in pairs(PortalContainerFolderReference:GetChildren()) do
-        if IndividualPortalPartInstance:IsA("BasePart") then 
-            table.insert(AvailableLocationsListContainer, IndividualPortalPartInstance.Name) 
-        end
-    end
-    return AvailableLocationsListContainer
-end
-
-local TeleportationDestinationSelectionDropdownReference = OthersTabContainerReference:AddDropdown("TeleportationDestinationSelection", {Title = "Select Teleport Location", Values = RetrieveAvailablePortalLocationsContainer(), Multi = false, Default = 1})
-
-OthersTabContainerReference:AddButton({Title = "Teleport to Location [BETA]", Description = "Teleport to Selected Island", Callback = function()
-    if AutomatedQuestFarmingActivationState or AutomatedEnemyFarmingActivationState then
-        PrimaryDashboardWindowInstance:Dialog({Title = "MicaHub Information", Content = "Cannot teleport while automated functions are running. Disable Auto Farm functions before teleporting.", Buttons = {
-            {Title = "Ok", Callback = function() end}
-        }})
-        return
-    end
-    local SelectedTeleportationDestinationValue = TeleportationDestinationSelectionDropdownReference.Value
-    if not SelectedTeleportationDestinationValue or not LocalPlayerReference.Character then return end
-    local PortalContainerFolderReference = workspace:FindFirstChild("IgnoreList") and workspace.IgnoreList:FindFirstChild("Portal")
-    if not PortalContainerFolderReference then return end
-    local TargetPortalDestinationReference = PortalContainerFolderReference:FindFirstChild(SelectedTeleportationDestinationValue)
-    if not TargetPortalDestinationReference or not TargetPortalDestinationReference:IsA("BasePart") then return end
-    LocalPlayerReference.Character:PivotTo(TargetPortalDestinationReference.CFrame)
-end})
-
-OthersTabContainerReference:AddSection("Https Servers Connections")
-OthersTabContainerReference:AddParagraph({Title = "How does it work?", Content = "Join servers with specific items using the code available on our Discord."})
-
-local ServerConnectionCodeInputFieldReference = OthersTabContainerReference:AddInput("ServerConnectionCode", {Title = "Target Server Code", Default = "", Placeholder = "", Numeric = false, Finished = false})
-
-OthersTabContainerReference:AddButton({Title = "Join the Server", Description = "Use this button to connect to the server", Callback = function()
-    PrimaryDashboardWindowInstance:Dialog({Title = "Https Servers Connections", Content = "Are you sure you want to connect?", Buttons = {
-        {Title = "Confirm", Callback = function()
-            local ProvidedServerCodeValue = ServerConnectionCodeInputFieldReference.Value
-            if ProvidedServerCodeValue and ProvidedServerCodeValue ~= "" then 
-                pcall(function() 
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, ProvidedServerCodeValue, LocalPlayerReference) 
-                end) 
-            end
-        end},
-        {Title = "Cancel", Callback = function() end}
-    }})
-end})
-
-getgenv().MicaHubMainInterfaceContainer = {
-    ToggleStatesContainer = {
-        QuestFarmingActivation = function() return AutomatedQuestFarmingActivationState end,
-        EnemyFarmingActivation = function() return AutomatedEnemyFarmingActivationState end,
-        BossFarmingActivation = function() return AutomatedBossFarmingActivationState end,
-        FruitCollectionActivation = function() return AutomatedFruitCollectionActivationState end,
-        FruitStorageActivation = function() return AutomatedFruitStorageActivationState end
-    },
-    PlayerReferencesContainer = {
-        LocalPlayerInstance = LocalPlayerReference,
-        CharacterInstance = function() return LocalPlayerReference.Character end,
-        PlayerLevelValue = function() return tonumber(PlayerLevelDisplayElementReference.Text) or 1 end
-    },
-    RemoteConnectionsContainer = {
-        DialogueEventReference = DialogueSystemRemoteEventHandlerReference,
-        QuestEventReference = QuestManagementRemoteEventHandlerReference
-    }
-}
-
-PrimaryDashboardWindowInstance:SelectTab(1)
+    Defense = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedStatusUpgradeStates.Defense end, {Defense = 1, Sword = 0, Gun = 0, Strength = 0, DevilFruit = 0}),
+    Sword = CreateAutomatedStatusUpgradeProcedureRoutine(function() return AutomatedStatusUpgradeStates.Sword end, {Defense = 0, Sword = 1, Gun = 0, Strength = 0, DevilFruit = 0}),
+    Gun = CreateAutomatedStatusUpgradeProcedureRoutine(function
