@@ -387,7 +387,9 @@ local function ExecuteQuestCancellationProcessForCurrentActiveQuestRoutine()
     if not getgenv().MicaHubMainInterfaceContainer then return end
     
     local QuestCancellationArgumentsTableReference = {"CancelQuest"}
-    getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.QuestEventReference:FireServer(unpack(QuestCancellationArgumentsTableReference))
+    pcall(function()
+        getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.QuestEventReference:FireServer(unpack(QuestCancellationArgumentsTableReference))
+    end)
     
     for QuestSelectionIdentifierReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
         if QuestInformationDataTableContainer.CurrentQuestActivationStatus then
@@ -407,7 +409,9 @@ local function ExecuteQuestActivationProcessBySpecificNpcNameRoutine(SelectedTar
             QuestName = QuestDescriptionTextReference
         }
     }
-    getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.DialogueEventReference:FireServer(unpack(QuestActivationArgumentsTableConfiguration))
+    pcall(function()
+        getgenv().MicaHubMainInterfaceContainer.RemoteConnectionsContainer.DialogueEventReference:FireServer(unpack(QuestActivationArgumentsTableConfiguration))
+    end)
     
     for QuestSelectionIdentifierReference, QuestInformationDataTableContainer in pairs(AutomatedQuestManagementSystemDatabaseContainer) do
         if QuestInformationDataTableContainer.QuestEnemyIdentifier == SelectedTargetNpcNameReference then
@@ -465,9 +469,15 @@ function QuestManagementModuleContainer.StartQuestManagement()
     QuestManagementActiveStatusReference = true
     ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine()
     
-    if getgenv().MicaHubMainInterfaceContainer and getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.LocalPlayerInstance then
-        local PlayerLevelDisplayElementReference = getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.LocalPlayerInstance.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
-        QuestLevelMonitoringConnectionReference = PlayerLevelDisplayElementReference:GetPropertyChangedSignal("Text"):Connect(ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine)
+    -- Usando a nova estrutura da interface
+    if getgenv().MicaHubMainInterfaceContainer then
+        local LocalPlayerRef = getgenv().MicaHubMainInterfaceContainer.PlayerReferencesContainer.LocalPlayerInstance
+        if LocalPlayerRef and LocalPlayerRef.PlayerGui and LocalPlayerRef.PlayerGui:FindFirstChild("MainUI") then
+            local PlayerLevelDisplayElementReference = LocalPlayerRef.PlayerGui.MainUI.MainFrame.StastisticsFrame.BaseFrame.Level
+            if PlayerLevelDisplayElementReference then
+                QuestLevelMonitoringConnectionReference = PlayerLevelDisplayElementReference:GetPropertyChangedSignal("Text"):Connect(ExecuteAutomatedQuestManagementSystemUpdateBasedOnPlayerLevelRoutine)
+            end
+        end
     end
 end
 
@@ -529,6 +539,15 @@ end
 
 function QuestManagementModuleContainer.IsQuestManagementActive()
     return QuestManagementActiveStatusReference
+end
+
+function QuestManagementModuleContainer.ProcessFruitsIfNeeded()
+    if not QuestManagementActiveStatusReference then return end
+    if not getgenv().MicaHubMainInterfaceContainer then return end
+    if getgenv().MicaHubMainInterfaceContainer.ToggleStatesContainer.FruitStorageActivation() then
+        return true
+    end
+    return false
 end
 
 return QuestManagementModuleContainer
