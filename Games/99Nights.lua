@@ -11,7 +11,7 @@ local MainWindowTabInterfaceContainer = ToraLibraryInterfaceReference:CreateWind
 
 local function CheckAllFunctionsActivated()
     if UnlockFramesPerSecondExecutionStatusVariable and WalkSpeedModificationExecutionStatusVariable and RemoveCooldownsExecutionStatusVariable then
-        MainWindowTabInterfaceContainer:Close()
+        ToraLibraryInterfaceReference:Close()
     end
 end
 
