@@ -1,5 +1,6 @@
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game:GetService("Players").LocalPlayer
+repeat task.wait() until game:GetService("Players").LocalPlayer.Character
 repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
 
 local UnlockFramesPerSecondExecutionStatusVariable = false
