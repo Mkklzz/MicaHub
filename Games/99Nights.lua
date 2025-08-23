@@ -79,6 +79,8 @@ MainWindowTabInterfaceContainer:AddButton({
                         for _, LandmarkModelInstanceReference in pairs(LandmarksFolderInstanceReference:GetChildren()) do
                             if LandmarkModelInstanceReference:IsA("Model") and (LandmarkModelInstanceReference.Name == "Flower" or LandmarkModelInstanceReference.Name == "Berry Bush") then
                                 LandmarkModelInstanceReference:Destroy()
+                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "FlowerRing1" then
+                                LandmarkModelInstanceReference:Destroy()
                             elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "Hollow Log" then
                                 local Grass1Object = LandmarkModelInstanceReference:FindFirstChild("Grass1")
                                 if Grass1Object then
@@ -87,6 +89,14 @@ MainWindowTabInterfaceContainer:AddButton({
                                 local LogHollowMeshObject = LandmarkModelInstanceReference:FindFirstChild("Meshes/loghollow")
                                 if LogHollowMeshObject then
                                     LogHollowMeshObject:Destroy()
+                                end
+                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "Bunny Burrow" then
+                                for _, BunnyBurrowPartReference in pairs(LandmarkModelInstanceReference:GetChildren()) do
+                                    if BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name == "Main" then
+                                        BunnyBurrowPartReference.Transparency = 1
+                                    elseif BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name ~= "Main" then
+                                        BunnyBurrowPartReference:Destroy()
+                                    end
                                 end
                             end
                         end
