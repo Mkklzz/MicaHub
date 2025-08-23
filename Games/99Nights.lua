@@ -9,6 +9,12 @@ local RemoveCooldownsExecutionStatusVariable = false
 local ToraLibraryInterfaceReference = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua"))()
 local MainWindowTabInterfaceContainer = ToraLibraryInterfaceReference:CreateWindow("99 Nights")
 
+local function CheckAllFunctionsActivated()
+    if UnlockFramesPerSecondExecutionStatusVariable and WalkSpeedModificationExecutionStatusVariable and RemoveCooldownsExecutionStatusVariable then
+        MainWindowTabInterfaceContainer:Close()
+    end
+end
+
 MainWindowTabInterfaceContainer:AddButton({
     text = "Remove Cooldowns",
     flag = "button",
