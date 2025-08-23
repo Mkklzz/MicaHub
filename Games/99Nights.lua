@@ -52,6 +52,7 @@ MainWindowTabInterfaceContainer:AddButton({
         
         ExecuteInitialPromptOptimization()
         RunServiceInstanceForCooldowns.Heartbeat:Connect(OptimizeNewProximityPrompts)
+        CheckAllFunctionsActivated()
     end
 })
 
@@ -82,6 +83,7 @@ MainWindowTabInterfaceContainer:AddButton({
         end
         
         RunServiceInstanceForWalkSpeed.Heartbeat:Connect(MaintainWalkSpeedAtThirty)
+        CheckAllFunctionsActivated()
     end
 })
 
@@ -227,6 +229,7 @@ MainWindowTabInterfaceContainer:AddButton({
         
         ExecuteInitialCompleteOptimizationProcess()
         RunServiceInstanceReference.Heartbeat:Connect(OptimizeNewlyCreatedWorkspaceObjects)
+        CheckAllFunctionsActivated()
     end
 })
 
