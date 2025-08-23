@@ -33,7 +33,7 @@ MainWindowTabInterfaceContainer:AddButton({
 })
 
 MainWindowTabInterfaceContainer:AddButton({
-    text = "Unlock Optimization [BETA]",
+    text = "Unlock Fps [BETA]",
     flag = "button",
     callback = function()
         if UnlockFramesPerSecondExecutionStatusVariable then return end
@@ -53,6 +53,8 @@ MainWindowTabInterfaceContainer:AddButton({
                 elseif WorkspaceObjectInstanceReference:IsA("UnionOperation") then
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
                 elseif WorkspaceObjectInstanceReference:IsA("Texture") then
+                    WorkspaceObjectInstanceReference:Destroy()
+                elseif WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Explosion") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") then
                     WorkspaceObjectInstanceReference:Destroy()
                 end
             end)
@@ -94,6 +96,10 @@ MainWindowTabInterfaceContainer:AddButton({
             pcall(function()
                 LightingServiceInstanceReference.Brightness = 5
                 LightingServiceInstanceReference.GlobalShadows = false
+                
+                for _, LightingChildInstance in pairs(LightingServiceInstanceReference:GetChildren()) do
+                    LightingChildInstance:Destroy()
+                end
             end)
         end
         
