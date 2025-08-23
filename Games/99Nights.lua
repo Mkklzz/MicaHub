@@ -1,6 +1,5 @@
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game:GetService("Players").LocalPlayer
-repeat task.wait() until game:GetService("Players").LocalPlayer.Character
 repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
 
 local UnlockFramesPerSecondExecutionStatusVariable = false
@@ -80,6 +79,15 @@ MainWindowTabInterfaceContainer:AddButton({
                         for _, LandmarkModelInstanceReference in pairs(LandmarksFolderInstanceReference:GetChildren()) do
                             if LandmarkModelInstanceReference:IsA("Model") and (LandmarkModelInstanceReference.Name == "Flower" or LandmarkModelInstanceReference.Name == "Berry Bush") then
                                 LandmarkModelInstanceReference:Destroy()
+                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "Hollow Log" then
+                                local Grass1Object = LandmarkModelInstanceReference:FindFirstChild("Grass1")
+                                if Grass1Object then
+                                    Grass1Object:Destroy()
+                                end
+                                local LogHollowMeshObject = LandmarkModelInstanceReference:FindFirstChild("Meshes/loghollow")
+                                if LogHollowMeshObject then
+                                    LogHollowMeshObject:Destroy()
+                                end
                             end
                         end
                     end
