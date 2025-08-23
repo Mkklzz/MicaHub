@@ -25,6 +25,13 @@ MainWindowTabInterfaceContainer:AddButton({
                     PlayerCharacterHumanoidReference.WalkSpeed = 30
                 end
             end
+            
+            pcall(function()
+                local SprintButtonReference = game:GetService("Players").LocalPlayer.PlayerGui.MobileButtons.Frame.SprintButton
+                if SprintButtonReference then
+                    SprintButtonReference.Visible = false
+                end
+            end)
         end
         
         RunServiceInstanceForWalkSpeed.Heartbeat:Connect(MaintainWalkSpeedAtThirty)
