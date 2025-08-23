@@ -1,13 +1,53 @@
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game:GetService("Players").LocalPlayer
-repeat task.wait() until game:GetService("Players").LocalPlayer.Character
 repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
 
 local UnlockFramesPerSecondExecutionStatusVariable = false
 local WalkSpeedModificationExecutionStatusVariable = false
+local RemoveCooldownsExecutionStatusVariable = false
 
 local ToraLibraryInterfaceReference = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua"))()
 local MainWindowTabInterfaceContainer = ToraLibraryInterfaceReference:CreateWindow("99 Nights")
+
+MainWindowTabInterfaceContainer:AddButton({
+    text = "Remove Cooldowns",
+    flag = "button",
+    callback = function()
+        if RemoveCooldownsExecutionStatusVariable then return end
+        RemoveCooldownsExecutionStatusVariable = true
+        
+        local RunServiceInstanceForCooldowns = game:GetService("RunService")
+        local WorkspaceInstanceForCooldowns = game:GetService("Workspace")
+        local ProcessedPromptsCache = {}
+        
+        local function RemovePromptHoldDuration(ProximityPromptInstanceReference)
+            pcall(function()
+                if ProximityPromptInstanceReference:IsA("ProximityPrompt") then
+                    ProximityPromptInstanceReference.HoldDuration = 0
+                end
+            end)
+        end
+        
+        local function ExecuteInitialPromptOptimization()
+            for _, WorkspaceObjectReference in pairs(WorkspaceInstanceForCooldowns:GetDescendants()) do
+                RemovePromptHoldDuration(WorkspaceObjectReference)
+                ProcessedPromptsCache[WorkspaceObjectReference] = true
+            end
+        end
+        
+        local function OptimizeNewProximityPrompts()
+            for _, WorkspaceObjectReference in pairs(WorkspaceInstanceForCooldowns:GetDescendants()) do
+                if not ProcessedPromptsCache[WorkspaceObjectReference] then
+                    RemovePromptHoldDuration(WorkspaceObjectReference)
+                    ProcessedPromptsCache[WorkspaceObjectReference] = true
+                end
+            end
+        end
+        
+        ExecuteInitialPromptOptimization()
+        RunServiceInstanceForCooldowns.Heartbeat:Connect(OptimizeNewProximityPrompts)
+    end
+})
 
 MainWindowTabInterfaceContainer:AddButton({
     text = "Walk Speed",
