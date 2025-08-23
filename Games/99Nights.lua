@@ -141,6 +141,8 @@ MainWindowTabInterfaceContainer:AddButton({
             pcall(function()
                 LightingServiceInstanceReference.Brightness = 5
                 LightingServiceInstanceReference.GlobalShadows = false
+                LightingServiceInstanceReference.FogStart = 0
+                LightingServiceInstanceReference.FogEnd = 100000
                 
                 for _, LightingChildInstance in pairs(LightingServiceInstanceReference:GetChildren()) do
                     LightingChildInstance:Destroy()
@@ -161,6 +163,8 @@ MainWindowTabInterfaceContainer:AddButton({
             pcall(function()
                 LightingServiceInstanceReference.Brightness = 5
                 LightingServiceInstanceReference.GlobalShadows = false
+                LightingServiceInstanceReference.FogStart = 0
+                LightingServiceInstanceReference.FogEnd = 100000
             end)
         end
         
