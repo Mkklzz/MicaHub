@@ -95,15 +95,20 @@ MainWindowTabInterfaceContainer:AddButton({
             pcall(function()
                 if WorkspaceObjectInstanceReference:IsA("BasePart") then
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
+                    WorkspaceObjectInstanceReference.Reflectance = 0
                 elseif WorkspaceObjectInstanceReference:IsA("MeshPart") then
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
+                    WorkspaceObjectInstanceReference.Reflectance = 0
                 elseif WorkspaceObjectInstanceReference:IsA("UnionOperation") then
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
+                    WorkspaceObjectInstanceReference.Reflectance = 0
                 elseif WorkspaceObjectInstanceReference:IsA("Texture") then
                     WorkspaceObjectInstanceReference:Destroy()
                 elseif WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") then
-                    WorkspaceObjectInstanceReference.Enabled = false
+                    WorkspaceObjectInstanceReference:Destroy()
                 elseif WorkspaceObjectInstanceReference:IsA("Explosion") then
+                    WorkspaceObjectInstanceReference:Destroy()
+                elseif WorkspaceObjectInstanceReference:IsA("PointLight") or WorkspaceObjectInstanceReference:IsA("SpotLight") or WorkspaceObjectInstanceReference:IsA("SurfaceLight") then
                     WorkspaceObjectInstanceReference:Destroy()
                 end
             end)
@@ -142,6 +147,7 @@ MainWindowTabInterfaceContainer:AddButton({
                                 for _, BunnyBurrowPartReference in pairs(LandmarkModelInstanceReference:GetChildren()) do
                                     if BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name == "Main" then
                                         BunnyBurrowPartReference.Transparency = 1
+                                        BunnyBurrowPartReference.Reflectance = 0
                                     elseif BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name ~= "Main" then
                                         BunnyBurrowPartReference:Destroy()
                                     end
@@ -184,6 +190,8 @@ MainWindowTabInterfaceContainer:AddButton({
                 LightingServiceInstanceReference.GlobalShadows = false
                 LightingServiceInstanceReference.FogStart = 0
                 LightingServiceInstanceReference.FogEnd = 100000
+                LightingServiceInstanceReference.EnvironmentSpecularScale = 0
+                LightingServiceInstanceReference.EnvironmentDiffuseScale = 0
                 
                 for _, LightingChildInstance in pairs(LightingServiceInstanceReference:GetChildren()) do
                     LightingChildInstance:Destroy()
@@ -206,6 +214,8 @@ MainWindowTabInterfaceContainer:AddButton({
                 LightingServiceInstanceReference.GlobalShadows = false
                 LightingServiceInstanceReference.FogStart = 0
                 LightingServiceInstanceReference.FogEnd = 100000
+                LightingServiceInstanceReference.EnvironmentSpecularScale = 0
+                LightingServiceInstanceReference.EnvironmentDiffuseScale = 0
             end)
         end
         
