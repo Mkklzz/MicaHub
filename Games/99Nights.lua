@@ -54,7 +54,9 @@ MainWindowTabInterfaceContainer:AddButton({
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
                 elseif WorkspaceObjectInstanceReference:IsA("Texture") then
                     WorkspaceObjectInstanceReference:Destroy()
-                elseif WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Explosion") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") then
+                elseif WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") then
+                    WorkspaceObjectInstanceReference.Enabled = false
+                elseif WorkspaceObjectInstanceReference:IsA("Explosion") then
                     WorkspaceObjectInstanceReference:Destroy()
                 end
             end)
@@ -69,6 +71,24 @@ MainWindowTabInterfaceContainer:AddButton({
                         for _, FoliageModelInstanceReference in pairs(FoliageFolderInstanceReference:GetChildren()) do
                             if FoliageModelInstanceReference:IsA("Model") and FoliageModelInstanceReference.Name ~= "Small Tree" then
                                 FoliageModelInstanceReference:Destroy()
+                            end
+                        end
+                    end
+                    
+                    local LandmarksFolderInstanceReference = MapFolderInstanceReference:FindFirstChild("Landmarks")
+                    if LandmarksFolderInstanceReference then
+                        for _, LandmarkModelInstanceReference in pairs(LandmarksFolderInstanceReference:GetChildren()) do
+                            if LandmarkModelInstanceReference:IsA("Model") and (LandmarkModelInstanceReference.Name == "Flower" or LandmarkModelInstanceReference.Name == "Berry Bush") then
+                                LandmarkModelInstanceReference:Destroy()
+                            end
+                        end
+                    end
+                    
+                    local BoundariesFolderInstanceReference = MapFolderInstanceReference:FindFirstChild("Boundaries")
+                    if BoundariesFolderInstanceReference then
+                        for _, BoundaryInstanceReference in pairs(BoundariesFolderInstanceReference:GetChildren()) do
+                            if BoundaryInstanceReference.Name ~= "Fog" then
+                                BoundaryInstanceReference:Destroy()
                             end
                         end
                     end
