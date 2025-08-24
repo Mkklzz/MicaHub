@@ -277,4 +277,53 @@ MainApplicationWindowContainerInterfaceReference:AddButton({
         end
         
         local function HandleNewWorkspaceObjectInstanceDetection(NewWorkspaceObjectInstanceReference)
-            if
+            if (NewWorkspaceObjectInstanceReference:IsA("BasePart") or NewWorkspaceObjectInstanceReference:IsA("MeshPart") or NewWorkspaceObjectInstanceReference:IsA("UnionOperation") or NewWorkspaceObjectInstanceReference:IsA("Texture") or NewWorkspaceObjectInstanceReference:IsA("Fire") or NewWorkspaceObjectInstanceReference:IsA("Smoke") or NewWorkspaceObjectInstanceReference:IsA("Sparkles") or NewWorkspaceObjectInstanceReference:IsA("ParticleEmitter") or NewWorkspaceObjectInstanceReference:IsA("Beam") or NewWorkspaceObjectInstanceReference:IsA("Trail") or NewWorkspaceObjectInstanceReference:IsA("Explosion") or NewWorkspaceObjectInstanceReference:IsA("PointLight") or NewWorkspaceObjectInstanceReference:IsA("SpotLight") or NewWorkspaceObjectInstanceReference:IsA("SurfaceLight")) and not ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem[NewWorkspaceObjectInstanceReference] then
+                table.insert(PendingWorkspaceObjectsOptimizationProcessingQueueArray, NewWorkspaceObjectInstanceReference)
+            end
+        end
+        
+        local function HandleWorkspaceObjectInstanceRemovalCleanup(RemovedWorkspaceObjectInstanceReference)
+            ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem[RemovedWorkspaceObjectInstanceReference] = nil
+        end
+        
+        local function PerformPeriodicCacheCleanupMaintenance()
+            local ValidObjectsTrackingCacheSystem = {}
+            for WorkspaceObjectReference, _ in pairs(ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem) do
+                if WorkspaceObjectReference and WorkspaceObjectReference.Parent then
+                    ValidObjectsTrackingCacheSystem[WorkspaceObjectReference] = true
+                end
+            end
+            ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem = ValidObjectsTrackingCacheSystem
+        end
+        
+        ProcessInitialWorkspaceOptimizationScan()
+        
+        WorkspaceInstanceForRenderingOptimizationReference.DescendantAdded:Connect(HandleNewWorkspaceObjectInstanceDetection)
+        WorkspaceInstanceForRenderingOptimizationReference.DescendantRemoving:Connect(HandleWorkspaceObjectInstanceRemovalCleanup)
+        
+        RunServiceInstanceForGraphicalOptimizationReference.Heartbeat:Connect(function()
+            GraphicalOptimizationProcessingThrottleControllerVariable = GraphicalOptimizationProcessingThrottleControllerVariable + 1
+            DestroyedObjectsCleanupThrottleControllerVariable = DestroyedObjectsCleanupThrottleControllerVariable + 1
+            
+            if GraphicalOptimizationProcessingThrottleControllerVariable >= 8 then
+                ProcessPendingWorkspaceObjectsOptimizationQueue()
+                ConfigureLightingServiceOptimizationSettings()
+                GraphicalOptimizationProcessingThrottleControllerVariable = 0
+            end
+            
+            if DestroyedObjectsCleanupThrottleControllerVariable >= 300 then
+                PerformPeriodicCacheCleanupMaintenance()
+                DestroyedObjectsCleanupThrottleControllerVariable = 0
+            end
+        end)
+        
+        VerifyAllOptimizationSystemsActivationStatus()
+    end
+})
+
+MainApplicationWindowContainerInterfaceReference:AddLabel({
+    text = "GitHub: Mkklzz",
+    type = "label"
+})
+
+ToraLibraryUserInterfaceSystemReference:Init()
