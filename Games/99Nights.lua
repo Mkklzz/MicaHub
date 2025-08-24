@@ -2,187 +2,227 @@ repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game:GetService("Players").LocalPlayer
 repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
 
-local UnlockFramesPerSecondExecutionStatusVariable = false
-local WalkSpeedModificationExecutionStatusVariable = false
-local RemoveCooldownsExecutionStatusVariable = false
+local FramesPerSecondOptimizationSystemActivationStatusVariable = false
+local PlayerMovementSpeedModificationSystemActivationStatusVariable = false
+local InteractionCooldownRemovalSystemActivationStatusVariable = false
 
-local ToraLibraryInterfaceReference = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua"))()
-local MainWindowTabInterfaceContainer = ToraLibraryInterfaceReference:CreateWindow("99 Nights")
+local ToraLibraryUserInterfaceSystemReference = loadstring(game:HttpGet("https://raw.githubusercontent.com/Mkklzz/MicaHub/Home/ToraLibrarySource.lua"))()
+local MainApplicationWindowContainerInterfaceReference = ToraLibraryUserInterfaceSystemReference:CreateWindow("99 Nights")
 
-local function CheckAllFunctionsActivated()
-    if UnlockFramesPerSecondExecutionStatusVariable and WalkSpeedModificationExecutionStatusVariable and RemoveCooldownsExecutionStatusVariable then
+local function VerifyAllOptimizationSystemsActivationStatus()
+    if FramesPerSecondOptimizationSystemActivationStatusVariable and PlayerMovementSpeedModificationSystemActivationStatusVariable and InteractionCooldownRemovalSystemActivationStatusVariable then
         pcall(function()
-            if ToraLibraryInterfaceReference and type(ToraLibraryInterfaceReference.Close) == "function" then
-                ToraLibraryInterfaceReference:Close()
-            else
-                warn("MicaHub Error")
+            if ToraLibraryUserInterfaceSystemReference and type(ToraLibraryUserInterfaceSystemReference.Close) == "function" then
+                ToraLibraryUserInterfaceSystemReference:Close()
             end
         end)
     end
 end
 
-MainWindowTabInterfaceContainer:AddButton({
+MainApplicationWindowContainerInterfaceReference:AddButton({
     text = "Remove Cooldowns",
     flag = "button",
     callback = function()
-        if RemoveCooldownsExecutionStatusVariable then return end
-        RemoveCooldownsExecutionStatusVariable = true
+        if InteractionCooldownRemovalSystemActivationStatusVariable then return end
+        InteractionCooldownRemovalSystemActivationStatusVariable = true
         
-        local RunServiceInstanceForCooldowns = game:GetService("RunService")
-        local WorkspaceInstanceForCooldowns = game:GetService("Workspace")
-        local ProcessedPromptsCache = {}
+        local RunServiceInstanceForCooldownRemovalSystemReference = game:GetService("RunService")
+        local WorkspaceInstanceForInteractionPromptOptimizationReference = game:GetService("Workspace")
+        local ProcessedProximityPromptsTrackingCacheStorageSystem = {}
+        local ProximityPromptProcessingThrottleControllerVariable = 0
+        local MaximumProximityPromptsProcessedPerFrameCycleLimit = 50
+        local PendingProximityPromptsProcessingQueueStorageArray = {}
         
-        local function RemovePromptHoldDuration(ProximityPromptInstanceReference)
+        local function OptimizeProximityPromptHoldDurationConfiguration(ProximityPromptInstanceObjectReference)
             pcall(function()
-                if ProximityPromptInstanceReference:IsA("ProximityPrompt") then
-                    ProximityPromptInstanceReference.HoldDuration = 0
+                if ProximityPromptInstanceObjectReference and ProximityPromptInstanceObjectReference:IsA("ProximityPrompt") and ProximityPromptInstanceObjectReference.Parent then
+                    ProximityPromptInstanceObjectReference.HoldDuration = 0
                 end
             end)
         end
         
-        local function ExecuteInitialPromptOptimization()
-            for _, WorkspaceObjectReference in pairs(WorkspaceInstanceForCooldowns:GetDescendants()) do
-                RemovePromptHoldDuration(WorkspaceObjectReference)
-                ProcessedPromptsCache[WorkspaceObjectReference] = true
-            end
-        end
-        
-        local function OptimizeNewProximityPrompts()
-            for _, WorkspaceObjectReference in pairs(WorkspaceInstanceForCooldowns:GetDescendants()) do
-                if not ProcessedPromptsCache[WorkspaceObjectReference] then
-                    RemovePromptHoldDuration(WorkspaceObjectReference)
-                    ProcessedPromptsCache[WorkspaceObjectReference] = true
+        local function ProcessInitialWorkspaceProximityPromptOptimization()
+            for _, WorkspaceDescendantObjectReference in pairs(WorkspaceInstanceForInteractionPromptOptimizationReference:GetDescendants()) do
+                if WorkspaceDescendantObjectReference:IsA("ProximityPrompt") then
+                    table.insert(PendingProximityPromptsProcessingQueueStorageArray, WorkspaceDescendantObjectReference)
                 end
             end
         end
         
-        ExecuteInitialPromptOptimization()
-        RunServiceInstanceForCooldowns.Heartbeat:Connect(OptimizeNewProximityPrompts)
-        CheckAllFunctionsActivated()
+        local function ProcessPendingProximityPromptOptimizationQueue()
+            local ProcessedPromptsInCurrentFrameCycleCounter = 0
+            local QueueArrayCurrentIndexPosition = 1
+            
+            while QueueArrayCurrentIndexPosition <= #PendingProximityPromptsProcessingQueueStorageArray and ProcessedPromptsInCurrentFrameCycleCounter < MaximumProximityPromptsProcessedPerFrameCycleLimit do
+                local ProximityPromptInstanceReference = PendingProximityPromptsProcessingQueueStorageArray[QueueArrayCurrentIndexPosition]
+                
+                if ProximityPromptInstanceReference and ProximityPromptInstanceReference.Parent and not ProcessedProximityPromptsTrackingCacheStorageSystem[ProximityPromptInstanceReference] then
+                    OptimizeProximityPromptHoldDurationConfiguration(ProximityPromptInstanceReference)
+                    ProcessedProximityPromptsTrackingCacheStorageSystem[ProximityPromptInstanceReference] = true
+                    ProcessedPromptsInCurrentFrameCycleCounter = ProcessedPromptsInCurrentFrameCycleCounter + 1
+                end
+                
+                table.remove(PendingProximityPromptsProcessingQueueStorageArray, QueueArrayCurrentIndexPosition)
+            end
+        end
+        
+        local function HandleNewProximityPromptInstanceDetection(NewProximityPromptInstanceReference)
+            if NewProximityPromptInstanceReference:IsA("ProximityPrompt") and not ProcessedProximityPromptsTrackingCacheStorageSystem[NewProximityPromptInstanceReference] then
+                table.insert(PendingProximityPromptsProcessingQueueStorageArray, NewProximityPromptInstanceReference)
+            end
+        end
+        
+        local function HandleProximityPromptInstanceRemovalCleanup(RemovedProximityPromptInstanceReference)
+            ProcessedProximityPromptsTrackingCacheStorageSystem[RemovedProximityPromptInstanceReference] = nil
+        end
+        
+        ProcessInitialWorkspaceProximityPromptOptimization()
+        
+        WorkspaceInstanceForInteractionPromptOptimizationReference.DescendantAdded:Connect(HandleNewProximityPromptInstanceDetection)
+        WorkspaceInstanceForInteractionPromptOptimizationReference.DescendantRemoving:Connect(HandleProximityPromptInstanceRemovalCleanup)
+        
+        RunServiceInstanceForCooldownRemovalSystemReference.Heartbeat:Connect(function()
+            ProximityPromptProcessingThrottleControllerVariable = ProximityPromptProcessingThrottleControllerVariable + 1
+            if ProximityPromptProcessingThrottleControllerVariable >= 8 then
+                ProcessPendingProximityPromptOptimizationQueue()
+                ProximityPromptProcessingThrottleControllerVariable = 0
+            end
+        end)
+        
+        VerifyAllOptimizationSystemsActivationStatus()
     end
 })
 
-MainWindowTabInterfaceContainer:AddButton({
+MainApplicationWindowContainerInterfaceReference:AddButton({
     text = "Walk Speed",
     flag = "button",
     callback = function()
-        if WalkSpeedModificationExecutionStatusVariable then return end
-        WalkSpeedModificationExecutionStatusVariable = true
+        if PlayerMovementSpeedModificationSystemActivationStatusVariable then return end
+        PlayerMovementSpeedModificationSystemActivationStatusVariable = true
         
-        local RunServiceInstanceForWalkSpeed = game:GetService("RunService")
+        local RunServiceInstanceForPlayerMovementOptimizationReference = game:GetService("RunService")
+        local PlayersServiceInstanceForMovementControlReference = game:GetService("Players")
+        local LocalPlayerInstanceForMovementModificationReference = PlayersServiceInstanceForMovementControlReference.LocalPlayer
+        local PlayerMovementSpeedThrottleControllerVariable = 0
+        local TargetPlayerCharacterMovementSpeedValue = 30
         
-        local function MaintainWalkSpeedAtThirty()
-            local LocalPlayerCharacterReference = game:GetService("Players").LocalPlayer.Character
-            if LocalPlayerCharacterReference and LocalPlayerCharacterReference:FindFirstChild("Humanoid") then
-                local PlayerCharacterHumanoidReference = LocalPlayerCharacterReference.Humanoid
-                if PlayerCharacterHumanoidReference.WalkSpeed ~= 30 then
-                    PlayerCharacterHumanoidReference.WalkSpeed = 30
+        local function ConfigurePlayerCharacterMovementSpeedOptimization()
+            local LocalPlayerCharacterInstanceReference = LocalPlayerInstanceForMovementModificationReference.Character
+            if LocalPlayerCharacterInstanceReference and LocalPlayerCharacterInstanceReference:FindFirstChild("Humanoid") then
+                local PlayerCharacterHumanoidMovementControllerReference = LocalPlayerCharacterInstanceReference.Humanoid
+                if PlayerCharacterHumanoidMovementControllerReference.WalkSpeed ~= TargetPlayerCharacterMovementSpeedValue then
+                    PlayerCharacterHumanoidMovementControllerReference.WalkSpeed = TargetPlayerCharacterMovementSpeedValue
                 end
             end
-            
+        end
+        
+        local function ConfigureMobileUserInterfaceSprintButtonVisibilityOptimization()
             pcall(function()
-                local SprintButtonReference = game:GetService("Players").LocalPlayer.PlayerGui.MobileButtons.Frame.SprintButton
-                if SprintButtonReference then
-                    SprintButtonReference.Visible = false
+                local MobileUserInterfaceSprintButtonReference = LocalPlayerInstanceForMovementModificationReference.PlayerGui.MobileButtons.Frame.SprintButton
+                if MobileUserInterfaceSprintButtonReference and MobileUserInterfaceSprintButtonReference.Visible then
+                    MobileUserInterfaceSprintButtonReference.Visible = false
                 end
             end)
         end
         
-        RunServiceInstanceForWalkSpeed.Heartbeat:Connect(MaintainWalkSpeedAtThirty)
-        CheckAllFunctionsActivated()
+        RunServiceInstanceForPlayerMovementOptimizationReference.Heartbeat:Connect(function()
+            PlayerMovementSpeedThrottleControllerVariable = PlayerMovementSpeedThrottleControllerVariable + 1
+            if PlayerMovementSpeedThrottleControllerVariable >= 8 then
+                ConfigurePlayerCharacterMovementSpeedOptimization()
+                ConfigureMobileUserInterfaceSprintButtonVisibilityOptimization()
+                PlayerMovementSpeedThrottleControllerVariable = 0
+            end
+        end)
+        
+        VerifyAllOptimizationSystemsActivationStatus()
     end
 })
 
-MainWindowTabInterfaceContainer:AddButton({
+MainApplicationWindowContainerInterfaceReference:AddButton({
     text = "Unlock Fps [BETA]",
     flag = "button",
     callback = function()
-        if UnlockFramesPerSecondExecutionStatusVariable then return end
-        UnlockFramesPerSecondExecutionStatusVariable = true
+        if FramesPerSecondOptimizationSystemActivationStatusVariable then return end
+        FramesPerSecondOptimizationSystemActivationStatusVariable = true
         
-        local RunServiceInstanceReference = game:GetService("RunService")
-        local WorkspaceInstanceReference = game:GetService("Workspace")
-        local LightingServiceInstanceReference = game:GetService("Lighting")
-        local ProcessedObjectsCacheStorageVariable = {}
+        local RunServiceInstanceForGraphicalOptimizationReference = game:GetService("RunService")
+        local WorkspaceInstanceForRenderingOptimizationReference = game:GetService("Workspace")
+        local LightingServiceInstanceForVisualEffectsOptimizationReference = game:GetService("Lighting")
         
-        local function OptimizeWorkspaceObjectMaterialsAndTextures(WorkspaceObjectInstanceReference)
+        local ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem = {}
+        local PendingWorkspaceObjectsOptimizationProcessingQueueArray = {}
+        local GraphicalOptimizationProcessingThrottleControllerVariable = 0
+        local MaximumWorkspaceObjectsProcessedPerFrameCycleLimit = 25
+        local DestroyedObjectsCleanupThrottleControllerVariable = 0
+        
+        local function OptimizeWorkspaceObjectMaterialPropertiesAndVisualEffects(WorkspaceObjectInstanceReference)
+            if not WorkspaceObjectInstanceReference or not WorkspaceObjectInstanceReference.Parent then
+                return
+            end
+            
             pcall(function()
-                if WorkspaceObjectInstanceReference:IsA("BasePart") then
+                if WorkspaceObjectInstanceReference:IsA("BasePart") or WorkspaceObjectInstanceReference:IsA("MeshPart") or WorkspaceObjectInstanceReference:IsA("UnionOperation") then
                     WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
                     WorkspaceObjectInstanceReference.Reflectance = 0
-                elseif WorkspaceObjectInstanceReference:IsA("MeshPart") then
-                    WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
-                    WorkspaceObjectInstanceReference.Reflectance = 0
-                elseif WorkspaceObjectInstanceReference:IsA("UnionOperation") then
-                    WorkspaceObjectInstanceReference.Material = Enum.Material.Plastic
-                    WorkspaceObjectInstanceReference.Reflectance = 0
-                elseif WorkspaceObjectInstanceReference:IsA("Texture") then
-                    WorkspaceObjectInstanceReference:Destroy()
-                elseif WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") then
-                    WorkspaceObjectInstanceReference:Destroy()
-                elseif WorkspaceObjectInstanceReference:IsA("Explosion") then
-                    WorkspaceObjectInstanceReference:Destroy()
-                elseif WorkspaceObjectInstanceReference:IsA("PointLight") or WorkspaceObjectInstanceReference:IsA("SpotLight") or WorkspaceObjectInstanceReference:IsA("SurfaceLight") then
+                elseif WorkspaceObjectInstanceReference:IsA("Texture") or WorkspaceObjectInstanceReference:IsA("Fire") or WorkspaceObjectInstanceReference:IsA("Smoke") or WorkspaceObjectInstanceReference:IsA("Sparkles") or WorkspaceObjectInstanceReference:IsA("ParticleEmitter") or WorkspaceObjectInstanceReference:IsA("Beam") or WorkspaceObjectInstanceReference:IsA("Trail") or WorkspaceObjectInstanceReference:IsA("Explosion") or WorkspaceObjectInstanceReference:IsA("PointLight") or WorkspaceObjectInstanceReference:IsA("SpotLight") or WorkspaceObjectInstanceReference:IsA("SurfaceLight") then
                     WorkspaceObjectInstanceReference:Destroy()
                 end
             end)
         end
         
-        local function OptimizeFoliageElementsAndItemsFolder()
+        local function ExecuteSpecializedMapElementsOptimizationProcess()
             pcall(function()
-                local MapFolderInstanceReference = WorkspaceInstanceReference:FindFirstChild("Map")
-                if MapFolderInstanceReference then
-                    local FoliageFolderInstanceReference = MapFolderInstanceReference:FindFirstChild("Foliage")
-                    if FoliageFolderInstanceReference then
-                        for _, FoliageModelInstanceReference in pairs(FoliageFolderInstanceReference:GetChildren()) do
-                            if FoliageModelInstanceReference:IsA("Model") and FoliageModelInstanceReference.Name ~= "Small Tree" then
-                                FoliageModelInstanceReference:Destroy()
-                            end
+                local MainMapFolderInstanceReference = WorkspaceInstanceForRenderingOptimizationReference:FindFirstChild("Map")
+                if not MainMapFolderInstanceReference then return end
+                
+                local FoliageElementsFolderInstanceReference = MainMapFolderInstanceReference:FindFirstChild("Foliage")
+                if FoliageElementsFolderInstanceReference then
+                    for _, FoliageModelInstanceReference in pairs(FoliageElementsFolderInstanceReference:GetChildren()) do
+                        if FoliageModelInstanceReference:IsA("Model") and FoliageModelInstanceReference.Name ~= "Small Tree" then
+                            FoliageModelInstanceReference:Destroy()
                         end
                     end
-                    
-                    local LandmarksFolderInstanceReference = MapFolderInstanceReference:FindFirstChild("Landmarks")
-                    if LandmarksFolderInstanceReference then
-                        for _, LandmarkModelInstanceReference in pairs(LandmarksFolderInstanceReference:GetChildren()) do
-                            if LandmarkModelInstanceReference:IsA("Model") and (LandmarkModelInstanceReference.Name == "Flower" or LandmarkModelInstanceReference.Name == "Berry Bush") then
+                end
+                
+                local LandmarksElementsFolderInstanceReference = MainMapFolderInstanceReference:FindFirstChild("Landmarks")
+                if LandmarksElementsFolderInstanceReference then
+                    for _, LandmarkModelInstanceReference in pairs(LandmarksElementsFolderInstanceReference:GetChildren()) do
+                        if LandmarkModelInstanceReference:IsA("Model") then
+                            if LandmarkModelInstanceReference.Name == "Flower" or LandmarkModelInstanceReference.Name == "Berry Bush" or LandmarkModelInstanceReference.Name == "FlowerRing1" then
                                 LandmarkModelInstanceReference:Destroy()
-                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "FlowerRing1" then
-                                LandmarkModelInstanceReference:Destroy()
-                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "Hollow Log" then
-                                local Grass1Object = LandmarkModelInstanceReference:FindFirstChild("Grass1")
-                                if Grass1Object then
-                                    Grass1Object:Destroy()
-                                end
-                                local LogHollowMeshObject = LandmarkModelInstanceReference:FindFirstChild("Meshes/loghollow")
-                                if LogHollowMeshObject then
-                                    LogHollowMeshObject:Destroy()
-                                end
-                            elseif LandmarkModelInstanceReference:IsA("Model") and LandmarkModelInstanceReference.Name == "Bunny Burrow" then
-                                for _, BunnyBurrowPartReference in pairs(LandmarkModelInstanceReference:GetChildren()) do
-                                    if BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name == "Main" then
-                                        BunnyBurrowPartReference.Transparency = 1
-                                        BunnyBurrowPartReference.Reflectance = 0
-                                    elseif BunnyBurrowPartReference:IsA("BasePart") and BunnyBurrowPartReference.Name ~= "Main" then
-                                        BunnyBurrowPartReference:Destroy()
+                            elseif LandmarkModelInstanceReference.Name == "Hollow Log" then
+                                local GrassElementReference = LandmarkModelInstanceReference:FindFirstChild("Grass1")
+                                local LogHollowMeshReference = LandmarkModelInstanceReference:FindFirstChild("Meshes/loghollow")
+                                if GrassElementReference then GrassElementReference:Destroy() end
+                                if LogHollowMeshReference then LogHollowMeshReference:Destroy() end
+                            elseif LandmarkModelInstanceReference.Name == "Bunny Burrow" then
+                                for _, BurrowComponentReference in pairs(LandmarkModelInstanceReference:GetChildren()) do
+                                    if BurrowComponentReference:IsA("BasePart") then
+                                        if BurrowComponentReference.Name == "Main" then
+                                            BurrowComponentReference.Transparency = 1
+                                            BurrowComponentReference.Reflectance = 0
+                                        else
+                                            BurrowComponentReference:Destroy()
+                                        end
                                     end
                                 end
                             end
                         end
                     end
-                    
-                    local BoundariesFolderInstanceReference = MapFolderInstanceReference:FindFirstChild("Boundaries")
-                    if BoundariesFolderInstanceReference then
-                        for _, BoundaryInstanceReference in pairs(BoundariesFolderInstanceReference:GetChildren()) do
-                            if BoundaryInstanceReference.Name ~= "Fog" then
-                                BoundaryInstanceReference:Destroy()
-                            end
+                end
+                
+                local BoundariesElementsFolderInstanceReference = MainMapFolderInstanceReference:FindFirstChild("Boundaries")
+                if BoundariesElementsFolderInstanceReference then
+                    for _, BoundaryElementInstanceReference in pairs(BoundariesElementsFolderInstanceReference:GetChildren()) do
+                        if BoundaryElementInstanceReference.Name ~= "Fog" then
+                            BoundaryElementInstanceReference:Destroy()
                         end
                     end
                 end
                 
-                local ItemsFolderInstanceReference = WorkspaceInstanceReference:FindFirstChild("Items")
-                if ItemsFolderInstanceReference then
-                    for _, ItemModelInstanceReference in pairs(ItemsFolderInstanceReference:GetChildren()) do
+                local ItemsElementsFolderInstanceReference = WorkspaceInstanceForRenderingOptimizationReference:FindFirstChild("Items")
+                if ItemsElementsFolderInstanceReference then
+                    for _, ItemModelInstanceReference in pairs(ItemsElementsFolderInstanceReference:GetChildren()) do
                         if ItemModelInstanceReference:IsA("Model") and (ItemModelInstanceReference.Name == "Bolt" or ItemModelInstanceReference.Name == "Carrot" or ItemModelInstanceReference.Name == "Berry") then
                             ItemModelInstanceReference:Destroy()
                         end
@@ -191,57 +231,50 @@ MainWindowTabInterfaceContainer:AddButton({
             end)
         end
         
-        local function ExecuteInitialCompleteOptimizationProcess()
-            OptimizeFoliageElementsAndItemsFolder()
-            
-            for _, WorkspaceObjectInstanceReference in pairs(WorkspaceInstanceReference:GetDescendants()) do
-                OptimizeWorkspaceObjectMaterialsAndTextures(WorkspaceObjectInstanceReference)
-                ProcessedObjectsCacheStorageVariable[WorkspaceObjectInstanceReference] = true
-            end
-            
+        local function ConfigureLightingServiceOptimizationSettings()
             pcall(function()
-                LightingServiceInstanceReference.Brightness = 5
-                LightingServiceInstanceReference.GlobalShadows = false
-                LightingServiceInstanceReference.FogStart = 0
-                LightingServiceInstanceReference.FogEnd = 100000
-                LightingServiceInstanceReference.EnvironmentSpecularScale = 0
-                LightingServiceInstanceReference.EnvironmentDiffuseScale = 0
+                LightingServiceInstanceForVisualEffectsOptimizationReference.Brightness = 5
+                LightingServiceInstanceForVisualEffectsOptimizationReference.GlobalShadows = false
+                LightingServiceInstanceForVisualEffectsOptimizationReference.FogStart = 0
+                LightingServiceInstanceForVisualEffectsOptimizationReference.FogEnd = 100000
+                LightingServiceInstanceForVisualEffectsOptimizationReference.EnvironmentSpecularScale = 0
+                LightingServiceInstanceForVisualEffectsOptimizationReference.EnvironmentDiffuseScale = 0
                 
-                for _, LightingChildInstance in pairs(LightingServiceInstanceReference:GetChildren()) do
-                    LightingChildInstance:Destroy()
+                for _, LightingChildElementReference in pairs(LightingServiceInstanceForVisualEffectsOptimizationReference:GetChildren()) do
+                    if LightingChildElementReference:IsA("PostEffect") or LightingChildElementReference:IsA("Atmosphere") then
+                        LightingChildElementReference:Destroy()
+                    end
                 end
             end)
         end
         
-        local function OptimizeNewlyCreatedWorkspaceObjects()
-            OptimizeFoliageElementsAndItemsFolder()
+        local function ProcessInitialWorkspaceOptimizationScan()
+            ExecuteSpecializedMapElementsOptimizationProcess()
+            ConfigureLightingServiceOptimizationSettings()
             
-            for _, WorkspaceObjectInstanceReference in pairs(WorkspaceInstanceReference:GetDescendants()) do
-                if not ProcessedObjectsCacheStorageVariable[WorkspaceObjectInstanceReference] then
-                    OptimizeWorkspaceObjectMaterialsAndTextures(WorkspaceObjectInstanceReference)
-                    ProcessedObjectsCacheStorageVariable[WorkspaceObjectInstanceReference] = true
+            for _, WorkspaceDescendantObjectReference in pairs(WorkspaceInstanceForRenderingOptimizationReference:GetDescendants()) do
+                if WorkspaceDescendantObjectReference:IsA("BasePart") or WorkspaceDescendantObjectReference:IsA("MeshPart") or WorkspaceDescendantObjectReference:IsA("UnionOperation") or WorkspaceDescendantObjectReference:IsA("Texture") or WorkspaceDescendantObjectReference:IsA("Fire") or WorkspaceDescendantObjectReference:IsA("Smoke") or WorkspaceDescendantObjectReference:IsA("Sparkles") or WorkspaceDescendantObjectReference:IsA("ParticleEmitter") or WorkspaceDescendantObjectReference:IsA("Beam") or WorkspaceDescendantObjectReference:IsA("Trail") or WorkspaceDescendantObjectReference:IsA("Explosion") or WorkspaceDescendantObjectReference:IsA("PointLight") or WorkspaceDescendantObjectReference:IsA("SpotLight") or WorkspaceDescendantObjectReference:IsA("SurfaceLight") then
+                    table.insert(PendingWorkspaceObjectsOptimizationProcessingQueueArray, WorkspaceDescendantObjectReference)
                 end
             end
-            
-            pcall(function()
-                LightingServiceInstanceReference.Brightness = 5
-                LightingServiceInstanceReference.GlobalShadows = false
-                LightingServiceInstanceReference.FogStart = 0
-                LightingServiceInstanceReference.FogEnd = 100000
-                LightingServiceInstanceReference.EnvironmentSpecularScale = 0
-                LightingServiceInstanceReference.EnvironmentDiffuseScale = 0
-            end)
         end
         
-        ExecuteInitialCompleteOptimizationProcess()
-        RunServiceInstanceReference.Heartbeat:Connect(OptimizeNewlyCreatedWorkspaceObjects)
-        CheckAllFunctionsActivated()
-    end
-})
-
-MainWindowTabInterfaceContainer:AddLabel({
-    text = "GitHub: Mkklzz",
-    type = "label"
-})
-
-ToraLibraryInterfaceReference:Init()
+        local function ProcessPendingWorkspaceObjectsOptimizationQueue()
+            local ProcessedObjectsInCurrentFrameCycleCounter = 0
+            local QueueArrayCurrentIndexPosition = 1
+            
+            while QueueArrayCurrentIndexPosition <= #PendingWorkspaceObjectsOptimizationProcessingQueueArray and ProcessedObjectsInCurrentFrameCycleCounter < MaximumWorkspaceObjectsProcessedPerFrameCycleLimit do
+                local WorkspaceObjectInstanceReference = PendingWorkspaceObjectsOptimizationProcessingQueueArray[QueueArrayCurrentIndexPosition]
+                
+                if WorkspaceObjectInstanceReference and WorkspaceObjectInstanceReference.Parent and not ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem[WorkspaceObjectInstanceReference] then
+                    OptimizeWorkspaceObjectMaterialPropertiesAndVisualEffects(WorkspaceObjectInstanceReference)
+                    ProcessedWorkspaceObjectsOptimizationTrackingCacheSystem[WorkspaceObjectInstanceReference] = true
+                    ProcessedObjectsInCurrentFrameCycleCounter = ProcessedObjectsInCurrentFrameCycleCounter + 1
+                end
+                
+                table.remove(PendingWorkspaceObjectsOptimizationProcessingQueueArray, QueueArrayCurrentIndexPosition)
+            end
+        end
+        
+        local function HandleNewWorkspaceObjectInstanceDetection(NewWorkspaceObjectInstanceReference)
+            if
